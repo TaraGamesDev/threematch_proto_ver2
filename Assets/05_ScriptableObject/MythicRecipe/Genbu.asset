@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: Genbu
+  m_EditorClassIdentifier: Assembly-CSharp::MythicRecipe
+  Id: Genbu
+  Sequence:
+  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
+  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
+  - {fileID: 11400000, guid: 7e03ffdce2c1344d49ad35348c081c83, type: 2}
+  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
+  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
+  ResultUnit: {fileID: 11400000, guid: acc26e62b17ae493086d1c21bc42e6d0, type: 2}
+  OutputCount: 1
+  UnlockMessage: 

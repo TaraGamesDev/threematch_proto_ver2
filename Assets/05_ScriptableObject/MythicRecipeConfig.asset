@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d886f1c8d9af94ae5a555a4fdfa39310, type: 3}
   m_Name: MythicRecipeConfig
   m_EditorClassIdentifier: 
-  recipes: []
+  recipes:
+  - {fileID: 0}
