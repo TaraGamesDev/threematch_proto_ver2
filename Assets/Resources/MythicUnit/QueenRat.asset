@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 557315aef3de343f682227848017e550, type: 3}
-  m_Name: 4_Stag
+  m_Name: QueenRat
   m_EditorClassIdentifier: 
-  unitName: "\uC0AC\uC228 "
-  description: "\uB2EC\uC758 \uCD95\uBCF5\uC744 \uB0B4\uB9AC\uB294 \uCE58\uC720\uC758
-    \uC815\uB839!"
-  unitSprite: {fileID: -2302764686883985791, guid: 5852a85a49ab342cd90f774b7ff6041b, type: 3}
-  tier: 4
-  health: 100
-  attackDamage: 20
-  attackSpeed: 0.7
+  unitName: "\uC950 \uC5EC\uC655 "
+  description: "\uAC15\uB825\uD55C \uAD70\uB300\uB85C \uC774\uB044\uB294 \uC804\uC7A5\uC758
+    \uC9C0\uD718\uAD00! "
+  unitSprite: {fileID: 7625207866563261708, guid: 513a7da11cbbf459594c454a081b18ea, type: 3}
+  tier: 0
+  health: 400
+  attackDamage: 10
+  attackSpeed: 1
   moveSpeed: 10
-  attackRange: 300
+  attackRange: 400
   attackType: 0
   attackPattern: 0
   projectileType: 0
