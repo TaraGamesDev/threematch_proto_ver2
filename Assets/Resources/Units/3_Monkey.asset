@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 557315aef3de343f682227848017e550, type: 3}
+  m_Name: 3_Monkey
+  m_EditorClassIdentifier: 
+  unitName: "\uC6D0\uC22D\uC774"
+  description: "\uBA40\uB9AC\uC11C \uD3ED\uD0C4\uC744 \uB358\uC9C0\uB294 \uC7A5\uB09C\uAFB8\uB7EC\uAE30!"
+  unitSprite: {fileID: -1595407293, guid: 27cadda7732954891a349a4c21ce8bdd, type: 3}
+  tier: 3
+  health: 50
+  attackDamage: 18
+  attackSpeed: 1
+  moveSpeed: 10
+  attackRange: 300
+  attackType: 2
+  attackPattern: 2
+  projectileType: 3
+  splashRadius: 0
+  abilities: []
