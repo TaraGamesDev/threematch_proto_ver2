@@ -13,4 +13,8 @@ MonoBehaviour:
   m_Name: MythicRecipeConfig
   m_EditorClassIdentifier: 
   recipes:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: d951ec4d43cdc4075ab968635dd39558, type: 2}
+  - {fileID: 11400000, guid: d448e7fa68d534fc3bc9b96431bb8263, type: 2}
+  - {fileID: 11400000, guid: 34f4f6893e25c4f709dd79922222dfa2, type: 2}
+  - {fileID: 11400000, guid: daff40b544f3f483c9fb4930953b9058, type: 2}
+  - {fileID: 11400000, guid: 6fe0822d41c71480bb17a28fa146858c, type: 2}
