@@ -37,11 +37,14 @@ public class QueueManager : MonoBehaviour
 
     [Title("Mythic Recipes")]
     [SerializeField] private MythicRecipeConfig mythicRecipeConfig;
+    [SerializeField] private Transform mythicButtonsContainer; // 신화 소환 버튼들의 부모 컨테이너
+    [SerializeField] private GameObject mythicSpawnButtonPrefab; // 신화 소환 버튼 프리팹
 
 
     // private
     private readonly List<UnitBlock> blocks = new List<UnitBlock>();           // 현재 큐에 있는 블록들
     private readonly List<Vector2> slotLocalPositions = new List<Vector2>();   // 각 슬롯의 로컬 위치
+    private readonly List<GameObject> mythicButtons = new List<GameObject>();  // 생성된 신화 버튼들
     private float slotSize;                                                    // 슬롯 크기
     
     // 머지 애니메이션 관련
@@ -56,6 +59,7 @@ public class QueueManager : MonoBehaviour
         UnitDatabase.Initialize();
         RegisterBlockPool();
         RecalculateSlots();
+        CreateMythicButtons(); // 신화 버튼들 생성
 
         orderedRules = mergeRules.OrderByDescending(r => r.priority).ToList(); // 우선순위 순서대로 정렬
     }
@@ -80,6 +84,34 @@ public class QueueManager : MonoBehaviour
             float xPos = startX + slotWidth * i;
             slotLocalPositions.Add(new Vector2(xPos, 0f));
         }
+    }
+
+    /// <summary> 신화 레시피 개수만큼 버튼을 자동으로 생성합니다. </summary>
+    private void CreateMythicButtons()
+    {
+        if (mythicRecipeConfig == null || mythicButtonsContainer == null || mythicSpawnButtonPrefab == null)
+        {
+            Debug.LogWarning("QueueManager: Mythic button creation requires mythicRecipeConfig, mythicButtonsContainer, and mythicSpawnButtonPrefab to be assigned.");
+            return;
+        }
+
+        // 기존 버튼들 정리
+        foreach (var button in mythicButtons) if (button != null) DestroyImmediate(button);
+        
+        mythicButtons.Clear();
+
+        // 각 신화 레시피에 대해 버튼 생성
+        foreach (MythicRecipe recipe in mythicRecipeConfig.ActiveRecipes)
+        {
+            GameObject buttonObj = Instantiate(mythicSpawnButtonPrefab, mythicButtonsContainer);
+            buttonObj.name = $"MythicButton_{recipe.Id}";
+            
+            MythicSpawnButton mythicButton = buttonObj.GetComponent<MythicSpawnButton>();
+            if (mythicButton != null) mythicButton.Initialize(recipe, this);
+            mythicButtons.Add(buttonObj);
+        }
+
+        Debug.Log($"QueueManager: Created {mythicButtons.Count} mythic spawn buttons.");
     }
 
     #endregion
@@ -232,7 +264,7 @@ public class QueueManager : MonoBehaviour
     /// <summary> 모든 가능한 머지를 찾아서 대기열에 추가합니다. </summary>
     private void FindAndQueueMerges()
     {
-        FindAndQueueMythicRecipes(); // 미스틱 레시피 찾기
+        CheckMythicRecipes(); // 신화 레시피 확인 및 버튼 상태 업데이트
         FindAndQueueNormalMerges(); // 일반 머지 찾기
     }
 
@@ -278,11 +310,21 @@ public class QueueManager : MonoBehaviour
         }
     }
 
-    /// <summary> 신화 조합을 찾아서 대기열에 추가합니다. </summary>
-    private void FindAndQueueMythicRecipes()
+    /// <summary> 신화 레시피를 확인하고 버튼 상태를 업데이트합니다. </summary>
+    private void CheckMythicRecipes()
     {
-        if (mythicRecipeConfig == null) return;
+        if (mythicRecipeConfig == null || mythicButtonsContainer == null) return;
 
+        // 우선 모든 신화 레시피 버튼들을 비활성화
+        foreach (var buttonObj in mythicButtons)
+        {
+            if (buttonObj == null) continue;
+            
+            MythicSpawnButton mythicButton = buttonObj.GetComponent<MythicSpawnButton>();
+            if (mythicButton != null) mythicButton.SetAvailable(false);
+        }
+
+        // 각 신화 레시피 확인
         foreach (MythicRecipe recipe in mythicRecipeConfig.ActiveRecipes)
         {
             int window = recipe.Sequence.Count;
@@ -300,19 +342,34 @@ public class QueueManager : MonoBehaviour
                     }
                 }
 
-                // 머지 조합 조건 만족 시
+                // 조합 조건 만족 시 해당 버튼 활성화
                 if (match)
                 {
-                    // 머지할 블록들 수집
-                    List<UnitBlock> blocksToMerge = new List<UnitBlock>();
-                    for (int k = 0; k < window; k++) blocksToMerge.Add(blocks[start + k]);
+                    MythicSpawnButton mythicButton = FindMythicButtonForRecipe(recipe);
+                    if (mythicButton != null)
+                    {
+                        mythicButton.SetAvailable(true);
+                        mythicButton.SetRecipeData(recipe, start); // 레시피 데이터와 시작 인덱스 설정
+                    }
                     
-                    MergeAnimationData mergeData = new MergeAnimationData(blocksToMerge, recipe.ResultUnit, recipe.OutputCount, start, recipe.UnlockMessage, isMythic:true);
-                    pendingMerges.Enqueue(mergeData);
-                    return; // 한 번에 하나의 머지만 큐에 추가
+                    Debug.Log($"Mythic recipe '{recipe.Id}' is available! Start index: {start}");
+                    break; // 해당 레시피는 찾았으므로 다음 레시피로
                 }
             }
         }
+    }
+
+    /// <summary> 특정 레시피에 해당하는 신화 버튼을 찾습니다. </summary>
+    private MythicSpawnButton FindMythicButtonForRecipe(MythicRecipe recipe)
+    {
+        foreach (var buttonObj in mythicButtons)
+        {
+            if (buttonObj == null) continue;
+            
+            MythicSpawnButton mythicButton = buttonObj.GetComponent<MythicSpawnButton>();
+            if (mythicButton != null && mythicButton.IsForRecipe(recipe)) return mythicButton;
+        }
+        return null;
     }
 
     /// <summary> 다음 머지를 처리합니다. </summary>
@@ -382,6 +439,37 @@ public class QueueManager : MonoBehaviour
 
         // 레이아웃 재정렬 후 다음 머지 처리
         RelayoutQueue(onComplete: () => ProcessNextMerge());
+    }
+
+    #endregion
+
+    #region Manual Mythic Spawn
+
+    /// <summary> 신화 유닛을 수동으로 소환합니다. </summary>
+    /// <param name="recipe">소환할 신화 레시피</param>
+    /// <param name="startIndex">재료 블록들의 시작 인덱스</param>
+    public void SpawnMythicUnit(MythicRecipe recipe, int startIndex)
+    {
+        if (recipe == null || recipe.ResultUnit == null) return;
+
+        int window = recipe.Sequence.Count;
+        if (startIndex + window > blocks.Count) return;
+
+        // 재료 블록들 수집
+        List<UnitBlock> blocksToRemove = new List<UnitBlock>();
+        for (int i = 0; i < window; i++) blocksToRemove.Add(blocks[startIndex + i]);
+
+        // 재료 블록들 제거
+        foreach (var block in blocksToRemove) if (blocks.Contains(block)) RemoveBlock(block);
+
+        // 신화 유닛 소환
+        for (int i = 0; i < recipe.OutputCount; i++) UnitManager.Instance?.SpawnUnitFromUnitData(recipe.ResultUnit);
+
+        // 결과 메시지 표시
+        if (!string.IsNullOrEmpty(recipe.UnlockMessage)) UIManager.Instance?.ShowMessage(recipe.UnlockMessage);
+
+        // 레이아웃 재정렬 후 머지 확인
+        RelayoutQueue(onComplete: () => TryResolveQueue());
     }
 
     #endregion
@@ -461,3 +549,4 @@ public class QueueManager : MonoBehaviour
     
     #endregion
 }
+
