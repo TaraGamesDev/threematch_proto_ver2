@@ -19,9 +19,11 @@ public class QueueManager : MonoBehaviour
     [SerializeField] private float repositionDuration = 0.2f;     // 블록 재배치 애니메이션 시간
 
 
-    [Title("Generation")]
+    [Title("Generation & Pool")]
     [SerializeField] private UnitBlock unitBlockPrefab;
     [SerializeField] private SpawnProbabilitySystem spawnProbabilityConfig;
+    [SerializeField] private string blockPoolKey = "UnitBlock";
+    [SerializeField, Min(0)] private int prewarmBlockCount = 9;
 
 
 
@@ -52,6 +54,7 @@ public class QueueManager : MonoBehaviour
     {
         if (queueContainer == null) Debug.LogError("QueueManager: Queue container is not assigned");
         UnitDatabase.Initialize();
+        RegisterBlockPool();
         RecalculateSlots();
 
         orderedRules = mergeRules.OrderByDescending(r => r.priority).ToList(); // 우선순위 순서대로 정렬
@@ -107,6 +110,12 @@ public class QueueManager : MonoBehaviour
         return true;
     }
 
+    /// <summary> TMP Button OnClick 이벤트용 - 블록을 스폰합니다. </summary>
+    public void SpawnBlock()
+    {
+        TrySpawnBlock();
+    }
+
     private UnitData GetRandomUnitForTier(UnitData.UnitTier tier)
     {
         List<UnitData> candidates = UnitDatabase.GetUnitsByTier(tier);
@@ -135,8 +144,11 @@ public class QueueManager : MonoBehaviour
     {
         if (unitData == null) return null;
 
-        UnitBlock block = Instantiate(unitBlockPrefab, queueContainer); // TODO: 오브젝트 풀 사용 
-        block.Initialize(unitData); // 블록 초기화(데이터 셋팅 )
+        UnitBlock block = GetBlockInstance();
+        if (block == null){ Debug.LogWarning("QueueManager: 블록 인스턴스를 생성하지 못했습니다."); return null; }
+
+        block.Initialize(unitData);               // 블록 데이터 적용
+        block.PrepareForQueue();
         block.OnBlockClicked += SpawnUnitFromBlock; // 이벤트 구독 추가
 
         blocks.Insert(index, block); // 블록 리스트에 삽입
@@ -156,9 +168,7 @@ public class QueueManager : MonoBehaviour
 
         // 리스트에서 제거하고 블록 정리
         blocks.RemoveAt(index);
-        block.OnBlockClicked -= SpawnUnitFromBlock; // 이벤트 구독 해제
-        block.ResetToOriginalSize(); // 원래 크기로 복원
-        Destroy(block.gameObject); // 오브젝트 파괴
+        ReleaseBlock(block);
         
         // 레이아웃 재정렬은 호출하는 쪽에서 콜백으로 처리
     }
@@ -372,6 +382,41 @@ public class QueueManager : MonoBehaviour
 
         // 레이아웃 재정렬 후 다음 머지 처리
         RelayoutQueue(onComplete: () => ProcessNextMerge());
+    }
+
+    #endregion
+
+    #region Pool Helpers
+
+    private void RegisterBlockPool()
+    {
+        if (PoolManager.Instance == null) return;
+        if (unitBlockPrefab == null){ Debug.LogWarning("QueueManager: unitBlockPrefab이 설정되지 않았습니다."); return; }
+
+        PoolManager.Instance.RegisterPool(blockPoolKey, unitBlockPrefab.gameObject, prewarmBlockCount, null);
+    }
+
+    private UnitBlock GetBlockInstance()
+    {
+        UnitBlock block = null;
+
+        if (PoolManager.Instance != null) block = PoolManager.Instance.Get<UnitBlock>(blockPoolKey, queueContainer);
+        if (block == null) Debug.LogWarning("QueueManager: 블록 인스턴스를 생성하지 못했습니다.");
+        
+        return block;
+    }
+
+    private void ReleaseBlock(UnitBlock block)
+    {
+        if (block == null) return;
+
+        block.transform.DOKill();
+        block.OnBlockClicked -= SpawnUnitFromBlock;;
+        block.ResetToOriginalSize();
+        block.ResetStateForPool();
+
+        if (PoolManager.Instance != null) PoolManager.Instance.Release(block.gameObject);
+        else Destroy(block.gameObject);
     }
 
     #endregion
