@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 public class WaveManager : MonoBehaviour
 {
@@ -8,34 +9,47 @@ public class WaveManager : MonoBehaviour
     
     // 이벤트
     public System.Action<int> OnWaveChanged;
+
     
-    [Header("웨이브 설정")]
+    [Title("웨이브 설정")]
     public GameObject enemyPrefab;
-    public Transform spawnPoint;
+    public UnitData enemyUnitData;
     public float spawnInterval = 2f;
     public int enemiesPerWave = 10;
     
-    
-    [Header("적 데이터")]
-    public UnitData enemyUnitData;
+    [Title("스폰 존 설정")]
+    [Tooltip("몬스터가 스폰될 UI 패널 (랜덤 x위치에서 스폰)")]
+    public RectTransform monsterSpawnZone;
 
     
-    [Header("웨이브 증가")]
+    [Header("웨이브 진행에 따른 증가율")]
     public float healthMultiplier = 1.2f;
     public float damageMultiplier = 1.1f;
     public float speedMultiplier = 1.05f;
 
-    
-   [SerializeField] private List<Enemy> activeEnemies = new List<Enemy>();
-    private int currentWave = 1;
-    private bool isWaveActive = false;
-    private int enemiesSpawned = 0;
-    private int enemiesKilled = 0;
+
+    [Title("오브젝트 풀")]
+    [SerializeField] private string enemyPoolKey = "enemy-unit";
+    [SerializeField, Min(0)] private int prewarmEnemyCount = 50;
+
+
+    [Title("웨이브 진행상황")]
+    [SerializeField] private List<Enemy> activeEnemies = new List<Enemy>();
+    [SerializeField] private int currentWave = 1;
+    [SerializeField] private bool isWaveActive = false;
+    [SerializeField] private int enemiesSpawned = 0;
+    [SerializeField] private int enemiesKilled = 0;
     
     private void Awake()
     {
         if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        RegisterEnemyPool();
     }
     
     public void StartWave(int waveNumber)
@@ -73,29 +87,46 @@ public class WaveManager : MonoBehaviour
         {
             SpawnEnemy();
             enemiesSpawned++;
-            
             yield return new WaitForSeconds(spawnInterval);
         }
     }
     
+    #region Spawn Enemy
     private void SpawnEnemy()
     {
-        if (enemyPrefab == null || spawnPoint == null || enemyUnitData == null) return;
+        if (enemyPrefab == null || enemyUnitData == null) return;
+
+        Enemy enemy = GetEnemyFromPool();
+        if (enemy == null) return;
+
+        // MonsterSpawnZone에서 랜덤 위치 계산
+        Vector3 spawnPosition = GetRandomMonsterSpawnPosition();
+        enemy.transform.position = spawnPosition;
+        enemy.transform.rotation = Quaternion.identity;
+
+        // UnitData로 기본 스탯 설정
+        enemy.unitData = enemyUnitData;
+        enemy.Init();
+
+        // 웨이브에 따른 스탯 증가 적용
+        ApplyWaveScaling(enemy);
+        enemy.SetCanMove(true);
+    }
+    
+    /// <summary> MonsterSpawnZone에서 랜덤한 스폰 위치를 계산합니다. </summary>
+    private Vector3 GetRandomMonsterSpawnPosition()
+    {
+        if (monsterSpawnZone == null) { Debug.LogWarning("WaveManager: monsterSpawnZone이 설정되지 않았습니다."); return Vector3.zero; }
         
-        GameObject enemyObj = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity, spawnPoint);
-        Enemy enemy = enemyObj.GetComponent<Enemy>();
+        // MonsterSpawnZone의 경계 내에서 랜덤 위치 계산
+        Rect rect = monsterSpawnZone.rect;
+        Vector3 zonePosition = monsterSpawnZone.position;
         
-        if (enemy != null)
-        {
-            // UnitData로 기본 스탯 설정
-            enemy.unitData = enemyUnitData;
-            enemy.Init();
-            
-            // 웨이브에 따른 스탯 증가 적용
-            ApplyWaveScaling(enemy);
-            
-            activeEnemies.Add(enemy);
-        }
+        // UI 좌표를 월드 좌표로 변환
+        float randomX = zonePosition.x + Random.Range(-rect.width * 0.5f, rect.width * 0.5f);
+        float y = zonePosition.y;
+        
+        return new Vector3(randomX, y, 0f);
     }
     
     private void ApplyWaveScaling(Enemy enemy)
@@ -112,8 +143,8 @@ public class WaveManager : MonoBehaviour
         enemy.currentAttackSpeed = enemy.attackSpeed;
         enemy.currentAttackRange = enemy.attackRange;
     }
-    
 
+    #endregion
     
     public void RegisterEnemy(Enemy enemy)
     {
@@ -132,6 +163,9 @@ public class WaveManager : MonoBehaviour
         }
     }
     
+
+    #region Check Wave Completion
+
     private void CheckWaveCompletion()
     {
         if (isWaveActive && enemiesKilled >= enemiesSpawned && activeEnemies.Count == 0)
@@ -154,56 +188,28 @@ public class WaveManager : MonoBehaviour
         
         // UI 업데이트
         UIManager.Instance.UpdateGoldTextUI();
-        
-        // 모든 유닛을 스폰 포지션으로 되돌리기 (움직임도 정지됨)
-        // UnitManager.Instance.ResetUnitsToSpawnPosition();
-
                 
         foreach (var animal in UnitManager.Instance.activeUnits)
             if (animal != null && !animal.IsDead()) animal.SetCanMove(false); // 움직임 정지
             
-        
-        // 2초 후 다음 웨이브 시작
-        StartCoroutine(StartNextWaveDelayed());
+        GameManager.Instance.CompleteWave();
     }
     
     // 웨이브 클리어 보상 계산
     private int CalculateWaveReward()
     {
         // 현재 웨이브 * 뽑기에 필요한 돈
-        // int drawCost = BlockQueueManager.Instance.goldCostPerBlock;
-        return currentWave/5 + 20;
+        int drawCost = GameManager.Instance.goldCostPerBlock;
+        return currentWave/drawCost + drawCost*5;
     }
+
+    #endregion
     
-    private IEnumerator StartNextWaveDelayed()
-    {
-        yield return new WaitForSeconds(2f);
-        GameManager.Instance.CompleteWave();
-    }
-    
-    /// <summary>
-    /// 다음 웨이브를 시작합니다
-    /// </summary>
-    public void StartNextWave()
-    {
-        int nextWave = currentWave + 1;
-        StartWave(nextWave);
-    }
-    
+
+    #region Utils
     public void StopWave()
     {
         isWaveActive = false;
-        
-        // 모든 적 제거
-        foreach (var enemy in activeEnemies)
-        {
-            if (enemy != null)
-            {
-                Destroy(enemy.gameObject);
-            }
-        }
-        
-        activeEnemies.Clear();
     }
     
     public List<Enemy> GetActiveEnemies()
@@ -235,14 +241,30 @@ public class WaveManager : MonoBehaviour
     {
         return enemiesSpawned;
     }
+
+    #endregion
     
-    private void OnDrawGizmos()
+
+    #region Pool
+    private void RegisterEnemyPool()
     {
-        // 스폰 포인트 표시
-        if (spawnPoint != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(spawnPoint.position, 0.5f);
-        }
+        if (PoolManager.Instance == null) return;
+        if (enemyPrefab == null){ Debug.LogWarning("WaveManager: enemyPrefab이 설정되지 않았습니다."); return; }
+        PoolManager.Instance.RegisterPool(enemyPoolKey, enemyPrefab, prewarmEnemyCount, null);
     }
+
+    private Enemy GetEnemyFromPool()
+    {
+        Enemy enemy = null;
+
+        if (PoolManager.Instance != null) enemy = PoolManager.Instance.Get<Enemy>(enemyPoolKey, monsterSpawnZone);
+
+        if (enemy == null && enemyPrefab != null) Debug.LogWarning("Enemy Pool에서 오브젝트를 꺼내오는데 실패했습니다.");
+        
+        return enemy;
+    }
+
+    #endregion
+
+
 }
