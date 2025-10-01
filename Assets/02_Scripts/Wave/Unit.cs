@@ -13,6 +13,7 @@ public class Unit : MonoBehaviour
     public float moveSpeed = 2f;
     public float attackRange = 1f;
     public float attackSpeed = 1f;
+
     
     [Header("현재 스탯")]
     public int currentHealth;
@@ -20,6 +21,7 @@ public class Unit : MonoBehaviour
     public float currentMoveSpeed;
     public float currentAttackRange;
     public float currentAttackSpeed;
+
 
     [Header("상태")]
     public bool isSlowed = false;
@@ -34,11 +36,17 @@ public class Unit : MonoBehaviour
     public float lastAttackTime;
     public bool isAttacking = false;
     public Unit currentTarget; // 현재 타겟
+
+    
+    [Header("타겟 검색")]
+    private float lastTargetSearchTime; // 마지막 타겟 검색 시간
+
     
     [Header("시각적 요소")]
     public SpriteRenderer spriteRenderer;
     public GameObject attackEffect;
     public CircleCollider2D detectionCollider;
+
     
     [Header("특수 능력")]
     public GameObject acornProjectilePrefab; // 도토리 프리팹 (토끼용)
@@ -60,7 +68,21 @@ public class Unit : MonoBehaviour
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
     }
-    
+
+    protected virtual void OnEnable()
+    {
+        isDead = false;
+        canMove = true;
+        currentTarget = null;
+        isSlowed = false;
+        slowMultiplier = 1f;
+        slowDuration = 0f;
+        lastAttackTime = 0f;
+
+        if (spriteRenderer != null) spriteRenderer.color = originalColor;
+        transform.localScale = originalScale;
+    }
+
     protected virtual void Start()
     {
         Init();
@@ -95,13 +117,14 @@ public class Unit : MonoBehaviour
     
     protected virtual void Update()
     {
-        if (isDead && !WaveManager.Instance.IsWaveActive()) return;
-
-        // 슬로우 효과 처리
-        // UpdateSlowEffect();
+        if (isDead) return;
         
-        // 자식 클래스에서 구현할 메서드들
-        UpdateTarget();
+        // 일정 시간마다 타겟 검색
+        if (ShouldSearchTarget())
+        {
+            UpdateTarget();
+            lastTargetSearchTime = Time.time;
+        }
         
         // 움직임이 허용된 경우에만 이동(웨이브 완료 시 움직임 정지)
         if (canMove) UpdateMovement();
@@ -110,6 +133,16 @@ public class Unit : MonoBehaviour
     // 자식 클래스에서 구현할 가상 메서드들
     protected virtual void UpdateTarget() { }
     protected virtual void UpdateMovement() { }
+    
+    /// <summary> 타겟 검색이 필요한지 확인합니다. </summary>
+    protected virtual bool ShouldSearchTarget()
+    {
+        // UnitManager에서 검색 간격을 가져옴
+        float searchInterval = UnitManager.Instance != null ? UnitManager.Instance.TargetSearchInterval : 0.5f;
+        
+        // 타겟이 없거나, 마지막 검색으로부터 충분한 시간이 지났으면 검색
+        return currentTarget == null || Time.time - lastTargetSearchTime >= searchInterval;
+    }
     
     protected void SetupDetectionCollider()
     {
@@ -122,10 +155,6 @@ public class Unit : MonoBehaviour
         detectionCollider.isTrigger = true;
         detectionCollider.radius = currentAttackRange;
     }
-    
-    // 콜라이더 기반 타겟 감지 - 자식 클래스에서 구현
-    protected virtual void OnTriggerEnter2D(Collider2D other) { }
-
     
     protected virtual void Attack()
     {
@@ -157,7 +186,9 @@ public class Unit : MonoBehaviour
             });
     }
     
-    protected virtual void ApplyDamage() { }
+    protected virtual void ApplyDamage() { 
+        if (currentTarget != null && !currentTarget.IsDead()) CombatManager.Instance?.ResolveAttack(this, currentTarget, currentAttackDamage);
+    }
     
     // 근접 공격 (기본 공격)
     protected virtual void MeleeAttack()
@@ -202,9 +233,17 @@ public class Unit : MonoBehaviour
     
     protected virtual void Die()
     {
+        if (isDead) return;
+
         Debug.Log($"{unitName} Die");
         isDead = true;
-        Destroy(gameObject);
+        canMove = false;
+        currentTarget = null;
+        transform.DOKill();
+
+        if (spriteRenderer != null) spriteRenderer.color = originalColor;
+
+        PoolManager.Instance.Release(gameObject);
     }
     
     public bool IsDead()
@@ -221,39 +260,5 @@ public class Unit : MonoBehaviour
     public bool CanMove()
     {
         return canMove;
-    }
-
-
-    public void ApplySlow(float multiplier, float duration)
-    {
-        isSlowed = true;
-        slowMultiplier = multiplier;
-        slowDuration = duration;
-        
-        // 슬로우 시각적 효과
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = Color.blue;
-        }
-    }
-
-    private void UpdateSlowEffect()
-    {
-        if (isSlowed)
-        {
-            slowDuration -= Time.deltaTime;
-            
-            if (slowDuration <= 0f)
-            {
-                // 슬로우 효과 해제
-                isSlowed = false;
-                moveSpeed = originalMoveSpeed;
-                
-                if (spriteRenderer != null)
-                {
-                    spriteRenderer.color = originalColor;
-                }
-            }
-        }
     }
 }

@@ -19,10 +19,17 @@ public class UnitManager : MonoBehaviour
     [Tooltip("유닛이 스폰될 UI 패널 (UnitBlock의 x좌표에 맞춰 스폰)")]
     public RectTransform unitSpawnZone;
     public Transform unitStopPos; // 유닛들이 멈출 위치
+    
+    [Header("타겟 검색 설정")]
+    [Tooltip("타겟 검색 간격 (초)")]
+    [SerializeField, Range(0.1f, 2.0f)] private float targetSearchInterval = 0.5f;
 
     
     [Title("웨이브 진행상황")]
     public List<Animal> activeUnits = new List<Animal>();
+    
+    // 타겟 검색 간격 프로퍼티
+    public float TargetSearchInterval => targetSearchInterval;
     
     private void Awake()
     {

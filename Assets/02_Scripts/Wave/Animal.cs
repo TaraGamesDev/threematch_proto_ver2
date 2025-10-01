@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 
@@ -6,81 +7,101 @@ public class Animal : Unit
     [Title("전투")]
     // currentTarget은 부모 클래스 Unit에서 상속받음
     
+    #region Update Target
     protected override void UpdateTarget()
     {
-        // 타겟이 유효하지 않으면 제거
-        if (currentTarget != null && currentTarget.IsDead()) currentTarget = null;
-        
-        // 타겟이 없으면 범위 내에서 새로운 타겟 탐지
-        if (currentTarget == null) FindTargetInRange();
+        currentTarget = FindNearestEnemy(); // 가장 가까운 적을 찾아서 타겟으로 설정
     }
-    
-    private Enemy GetCurrentEnemyTarget()
+
+    /// <summary> 가장 가까운 적을 찾습니다. </summary>
+    /// <returns>가장 가까운 적, 없으면 null</returns>
+    private Enemy FindNearestEnemy()
     {
-        return currentTarget as Enemy;
-    }
-    
-    private void FindTargetInRange()
-    {
-        // 범위 내의 모든 Enemy 탐지
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, currentAttackRange);
+        if (WaveManager.Instance == null) return null;
         
-        foreach (Collider2D collider in colliders)
+        List<Enemy> activeEnemies = WaveManager.Instance.GetActiveEnemies();
+        if (activeEnemies == null || activeEnemies.Count == 0) return null;
+        
+        Enemy nearestEnemy = null;
+        float nearestDistance = float.MaxValue;
+        
+        foreach (Enemy enemy in activeEnemies)
         {
-            Enemy enemy = collider.GetComponent<Enemy>();
-            if (enemy != null && !enemy.IsDead())
+            if (enemy == null || enemy.IsDead()) continue;
+            
+            float distance = Vector3.Distance(transform.position, enemy.transform.position);
+            
+            if (distance < nearestDistance)
             {
-                // 실제 거리로 공격 가능 여부 확인
-                float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
-                if (distanceToEnemy <= currentAttackRange)
-                {
-                    currentTarget = enemy;
-                    break;
-                }
+                nearestDistance = distance;
+                nearestEnemy = enemy;
             }
         }
+        
+        return nearestEnemy;
     }
+
+    #endregion
     
+    #region Update Movement
     protected override void UpdateMovement()
-    {
-        if (currentTarget != null)
-        {
-            // 실제 거리로 공격 가능 여부 확인
-            float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
-            if (distanceToTarget <= currentAttackRange) Attack();
-        }
-        else MoveToStopPosition();
-    }
-    
-    private void MoveToStopPosition()
     {
         if (!canMove && !WaveManager.Instance.IsWaveActive()) return; // 움직임이 제한된 경우 정지
         
         Transform stopPos = UnitManager.Instance.unitStopPos;
         if (stopPos == null) return;
         
-        // UnitStopPos에 도착했는지 확인
-        if (transform.position.x >= stopPos.position.x) return; // 이미 도착한 경우 더 이상 이동하지 않음
+        // UnitStopPos에 도착했는지 확인 (위쪽으로 이동)
+        if (transform.position.y >= stopPos.position.y) return; // 이미 도착한 경우 더 이상 이동하지 않음
         
-        // UnitStopPos까지 이동
-        transform.position += Vector3.right * currentMoveSpeed * Time.deltaTime * 10f;
+        // 타겟이 있고 사거리 안에 있으면 공격
+        if (currentTarget != null)
+        {
+            float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
+            if (distanceToTarget <= currentAttackRange)
+            {
+                Attack();
+                return; // 공격 중에는 이동하지 않음
+            }
+        }
+        
+        // 가장 가까운 적을 향해 이동
+        MoveTowardsNearestEnemy();
     }
     
-    protected override void ApplyDamage()
+    private void MoveTowardsNearestEnemy()
     {
-        Enemy enemyTarget = GetCurrentEnemyTarget();
-        if (enemyTarget != null && !enemyTarget.IsDead()) enemyTarget.TakeDamage(currentAttackDamage);
+        Vector3 movement = Vector3.zero;
         
+        // 기본 전진 방향 (위쪽)
+        movement += Vector3.up * currentMoveSpeed * Time.deltaTime * 10f;
+        
+        // 가장 가까운 적이 있으면 좌우로도 이동
+        if (currentTarget != null)
+        {
+            float horizontalDistance = currentTarget.transform.position.x - transform.position.x;
+            
+            // 적이 왼쪽에 있으면 왼쪽으로, 오른쪽에 있으면 오른쪽으로 이동
+            if (Mathf.Abs(horizontalDistance) > 0.5f) // 최소 거리 이상일 때만 좌우 이동
+            {
+                float horizontalMovement = Mathf.Sign(horizontalDistance) * currentMoveSpeed * Time.deltaTime * 5f; // 좌우 이동 속도는 전진 속도의 절반
+                movement += Vector3.right * horizontalMovement;
+            }
+        }
+        
+        transform.position += movement;
     }
+    
+    #endregion
     
     protected override void Die()
     {
+        if (isDead) return;
+        UnitManager.Instance.RemoveUnit(this); // 유닛 매니저의 activeUnits에서 유닛 제거
         base.Die();
-        // 유닛 매니저에서 제거
-        UnitManager.Instance.RemoveUnit(this);
     }
     
-    // 스탯 초기화 (웨이브 시작 시 호출)
+    // 스탯 초기화 및 영구 업그레이드 적용 (웨이브 시작 시 호출)
     public void ResetStats()
     {
         // 기본 스탯으로 초기화
@@ -90,10 +111,9 @@ public class Animal : Unit
         currentAttackRange = attackRange;
         currentAttackSpeed = attackSpeed;
         
-        // 영구 업그레이드 다시 적용
-        // if (UpgradeSystem.Instance != null) UpgradeSystem.Instance.ApplyPermanentUpgradesToUnit(this);
-        
+        UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(this);
     }
+    
     //@ TODO : 업그레이드 적용
     // 업그레이드 적용
     // public void ApplyUpgrade(UpgradeData.UpgradeType upgradeType, float bonus, bool isPercentage)
