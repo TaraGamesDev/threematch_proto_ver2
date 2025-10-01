@@ -35,6 +35,13 @@ public class MythicRecipe : ScriptableObject
     [Tooltip("Optional message surfaced when the recipe resolves")] 
     public string UnlockMessage = string.Empty;
 
+    [Header("Unlock Settings")]
+    [Tooltip("이 신화 유닛이 해금되었는지 여부")]
+    public bool isUnlocked = false;
+    
+    [Tooltip("이 신화 유닛이 해금되는 웨이브 번호")]
+    public int unlockWave = 5;
+
     /// <summary>
     /// Validates that this recipe has all required data
     /// </summary>

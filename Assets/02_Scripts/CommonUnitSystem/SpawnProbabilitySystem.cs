@@ -162,6 +162,23 @@ public class SpawnProbabilitySystem : ScriptableObject
         
         RefreshNormalizedProbabilities();
     }
+
+    public float GetRawProbability(UnitData.UnitTier tier)
+    {
+        var existingTierProb = tierProbabilities.FirstOrDefault(tp => tp.tier == tier);
+        return existingTierProb != null ? existingTierProb.probability : 0f;
+    }
+
+    public void AddToTierProbability(UnitData.UnitTier tier, float delta)
+    {
+        if (Mathf.Approximately(delta, 0f)) return;
+
+        var existingTierProb = tierProbabilities.FirstOrDefault(tp => tp.tier == tier);
+        if (existingTierProb != null) existingTierProb.probability = Mathf.Max(0f, existingTierProb.probability + delta);
+        else tierProbabilities.Add(new TierSpawnProbability(tier, Mathf.Max(0f, delta)));
+
+        RefreshNormalizedProbabilities();
+    }
     
     
     #endregion

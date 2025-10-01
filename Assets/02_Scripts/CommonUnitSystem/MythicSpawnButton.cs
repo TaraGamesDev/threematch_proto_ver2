@@ -15,6 +15,7 @@ public class MythicSpawnButton : MonoBehaviour
     [SerializeField] private Image buttonImage;
     [SerializeField] private TextMeshProUGUI buttonText;
     [SerializeField] private Image iconImage;
+    [SerializeField] private GameObject lockIcon; // 자물쇠 아이콘
 
     [Header("Visual Settings")]
     [SerializeField] private Color inactiveColor = Color.gray;
@@ -27,9 +28,10 @@ public class MythicSpawnButton : MonoBehaviour
     [SerializeField] private float tooltipDuration = 3f; // 툴팁 표시 시간
 
     [Header("Debug")]
-    [SerializeField, ReadOnly] private MythicRecipe assignedRecipe;
+    [SerializeField, ReadOnly] public MythicRecipe assignedRecipe;
     [SerializeField, ReadOnly] private int recipeStartIndex = -1;
     [SerializeField, ReadOnly] private bool isAvailable = false;
+    [SerializeField, ReadOnly] private bool isLocked = false;
 
     // References
     private QueueManager queueManager;
@@ -60,7 +62,8 @@ public class MythicSpawnButton : MonoBehaviour
             iconImage.sprite = recipe.ResultUnit.unitSprite;
         }
 
-        // 초기 상태: 비활성화
+        // 초기 상태 설정
+        SetLocked(!recipe.isUnlocked);
         SetAvailable(false);
 
         // 버튼 클릭 이벤트 연결
@@ -109,6 +112,28 @@ public class MythicSpawnButton : MonoBehaviour
         return assignedRecipe != null && assignedRecipe == recipe;
     }
 
+    /// <summary> 버튼의 잠금 상태를 설정합니다. </summary>
+    public void SetLocked(bool locked)
+    {
+        isLocked = locked;
+
+        if (lockIcon != null)
+        {
+            lockIcon.SetActive(locked);
+        }
+
+        if (button != null)
+        {
+            button.interactable = !locked;
+        }
+
+        // 잠금 상태일 때는 회색으로 설정
+        if (locked && buttonImage != null)
+        {
+            buttonImage.color = inactiveColor;
+        }
+    }
+
     #endregion
 
     #region Animation
@@ -152,6 +177,13 @@ public class MythicSpawnButton : MonoBehaviour
         if (assignedRecipe == null)
         {
             Debug.LogWarning("MythicSpawnButton: No recipe assigned");
+            return;
+        }
+
+        // 잠금된 버튼: 해금 조건 툴팁 표시
+        if (isLocked)
+        {
+            ShowUnlockTooltip();
             return;
         }
 
@@ -204,6 +236,18 @@ public class MythicSpawnButton : MonoBehaviour
             }
         }
         return result;
+    }
+
+    /// <summary> 해금 조건 툴팁을 표시합니다. </summary>
+    private void ShowUnlockTooltip()
+    {
+        if (assignedRecipe == null) return;
+
+        string tooltipText = $"<color=red>🔒 잠금됨</color>\n";
+        tooltipText += $"<color=orange>{assignedRecipe.ResultUnit?.unitName}</color>\n";
+        tooltipText += $"해금 조건: <color=yellow>웨이브 {assignedRecipe.unlockWave} 클리어</color>";
+
+        if (UIManager.Instance != null) UIManager.Instance.ShowMessage(tooltipText, tooltipDuration);
     }
 
     #endregion

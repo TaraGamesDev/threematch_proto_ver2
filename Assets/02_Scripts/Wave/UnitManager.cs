@@ -19,17 +19,13 @@ public class UnitManager : MonoBehaviour
     [Tooltip("유닛이 스폰될 UI 패널 (UnitBlock의 x좌표에 맞춰 스폰)")]
     public RectTransform unitSpawnZone;
     public Transform unitStopPos; // 유닛들이 멈출 위치
-    
-    [Header("타겟 검색 설정")]
-    [Tooltip("타겟 검색 간격 (초)")]
-    [SerializeField, Range(0.1f, 2.0f)] private float targetSearchInterval = 0.5f;
+
+    [Tooltip("타겟 검색 간격")]
+    public float TargetSearchInterval = 0.5f;
 
     
     [Title("웨이브 진행상황")]
     public List<Animal> activeUnits = new List<Animal>();
-    
-    // 타겟 검색 간격 프로퍼티
-    public float TargetSearchInterval => targetSearchInterval;
     
     private void Awake()
     {
@@ -68,6 +64,36 @@ public class UnitManager : MonoBehaviour
         animal.unitData = block.unitData;
         var image = animal.GetComponent<Image>();
         if (image != null) image.sprite = block.unitData.unitSprite;
+
+        animal.Init();
+        UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal);
+        animal.SetCanMove(WaveManager.Instance.IsWaveActive());
+
+        if (!activeUnits.Contains(animal)) activeUnits.Add(animal);
+    }
+    
+    /// <summary> UnitData로 직접 유닛을 소환합니다. (신화 유닛 소환용) </summary>
+    public void SpawnUnitFromUnitData(UnitData unitData)
+    {
+        if (unitData == null) return;
+        
+        Animal animal = GetUnitFromPool();
+        if (animal == null) return;
+
+        if(unitSpawnZone == null){ Debug.LogWarning("UnitManager: unitSpawnZone이 설정되지 않았습니다."); return; }
+        
+        Transform parent = unitSpawnZone;
+        animal.transform.SetParent(parent, false);
+        
+        // UnitSpawnZone의 중앙에서 스폰
+        Vector3 spawnPosition = unitSpawnZone.position;
+        animal.transform.position = spawnPosition;
+        animal.transform.rotation = Quaternion.identity;
+        animal.transform.localScale = Vector3.one * 2f;
+
+        animal.unitData = unitData;
+        var image = animal.GetComponent<Image>();
+        if (image != null) image.sprite = unitData.unitSprite;
 
         animal.Init();
         UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal);

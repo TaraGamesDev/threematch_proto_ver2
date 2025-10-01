@@ -21,3 +21,5 @@ MonoBehaviour:
   ResultUnit: {fileID: 11400000, guid: c76ba57684fe14d72a9f9ee97c38ab74, type: 2}
   OutputCount: 1
   UnlockMessage: 
+  isUnlocked: 0
+  unlockWave: 25

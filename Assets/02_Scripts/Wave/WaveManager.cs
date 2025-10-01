@@ -21,6 +21,14 @@ public class WaveManager : MonoBehaviour
     [Tooltip("몬스터가 스폰될 UI 패널 (랜덤 x위치에서 스폰)")]
     public RectTransform monsterSpawnZone;
 
+    [Title("신화 적 설정")]
+    [Tooltip("신화 유닛이 적으로 출현하는 웨이브 번호들")]
+    public List<int> mythicEnemyWaves = new List<int>();
+    
+    [Tooltip("신화 적으로 스폰될 유닛 데이터")]
+    [SerializeField] private MythicRecipeConfig config;
+    public UnitData mythicEnemyData;
+
     
     [Header("웨이브 진행에 따른 증가율")]
     public float healthMultiplier = 1.2f;
@@ -50,6 +58,7 @@ public class WaveManager : MonoBehaviour
         }
 
         RegisterEnemyPool();
+        InitializeMythicEnemyWaves();
     }
     
     public void StartWave(int waveNumber)
@@ -83,9 +92,19 @@ public class WaveManager : MonoBehaviour
     {
         Debug.Log($"[WaveManager] SpawnWave - enemyCount : {enemyCount}");
         
+        // 신화 적 웨이브인지 확인
+        bool isMythicWave = mythicEnemyWaves.Contains(currentWave);
+        
         while (enemiesSpawned < enemyCount && isWaveActive)
         {
-            SpawnEnemy();
+            // 신화 적 웨이브이고 마지막 적이라면 신화 적 스폰
+            if (isMythicWave && enemiesSpawned == enemyCount - 1)
+            {
+                Debug.Log($"[WaveManager] SpawnMythicEnemy - currentWave : {currentWave}");
+                yield return StartCoroutine(SpawnMythicEnemy());
+            }
+            else SpawnEnemy();
+            
             enemiesSpawned++;
             yield return new WaitForSeconds(spawnInterval);
         }
@@ -144,6 +163,93 @@ public class WaveManager : MonoBehaviour
         enemy.currentAttackRange = enemy.attackRange;
     }
 
+    /// <summary> 신화 적을 스폰합니다. 경고 이펙트와 함께 보스 느낌으로 스폰됩니다. </summary>
+    private IEnumerator SpawnMythicEnemy()
+    {
+        // 현재 웨이브에 해당하는 신화 유닛 데이터 가져오기
+        UnitData currentMythicData = GetMythicEnemyDataForCurrentWave();
+        if (currentMythicData == null) { Debug.LogWarning("WaveManager: 현재 웨이브에 해당하는 신화 유닛 데이터가 없습니다."); yield break; }
+
+        // 1. 빨간색 깜빡깜박 경고 이펙트
+        yield return StartCoroutine(ShowMythicWarning());
+
+        // 2. 신화 적 스폰
+        Enemy mythicEnemy = GetEnemyFromPool();
+        if (mythicEnemy == null) yield break;
+
+        // MonsterSpawnZone 중앙에서 스폰
+        Vector3 spawnPosition = monsterSpawnZone != null ? monsterSpawnZone.position : Vector3.zero;
+        mythicEnemy.transform.position = spawnPosition;
+        mythicEnemy.transform.rotation = Quaternion.identity;
+
+        // 크기 2배로 설정 (보스 느낌)
+        mythicEnemy.transform.localScale = Vector3.one * 2f;
+
+        // 신화 적 데이터로 설정
+        mythicEnemy.unitData = currentMythicData;
+        mythicEnemy.Init();
+
+        mythicEnemy.SetCanMove(true);
+
+        Debug.Log($"Mythic Enemy spawned at wave {currentWave}!");
+    }
+
+    /// <summary> 신화 적 스폰 전 빨간색 경고 이펙트를 표시합니다. </summary>
+    private IEnumerator ShowMythicWarning()
+    {
+        // 경고 메시지 표시
+        UIManager.Instance?.ShowMessage($"<color=red>⚠️ 신화 적 출현! ⚠️</color>", 2f);
+        
+        // 경고 이펙트 (빨간색 깜빡깜박)
+        if (monsterSpawnZone != null)
+        {
+            // MonsterSpawnZone에 빨간색 오버레이 효과
+            GameObject warningEffect = new GameObject("MythicWarning");
+            warningEffect.transform.SetParent(monsterSpawnZone, false);
+            
+            // 빨간색 이미지 컴포넌트 추가
+            UnityEngine.UI.Image warningImage = warningEffect.AddComponent<UnityEngine.UI.Image>();
+            warningImage.color = new Color(1f, 0f, 0f, 0.3f); // 반투명 빨간색
+            
+            // RectTransform 설정
+            RectTransform rectTransform = warningEffect.GetComponent<RectTransform>();
+            rectTransform.anchorMin = Vector2.zero;
+            rectTransform.anchorMax = Vector2.one;
+            rectTransform.offsetMin = Vector2.zero;
+            rectTransform.offsetMax = Vector2.zero;
+
+            // 깜빡깜박 애니메이션
+            for (int i = 0; i < 6; i++)
+            {
+                warningImage.color = new Color(1f, 0f, 0f, 0.5f);
+                yield return new WaitForSeconds(0.2f);
+                warningImage.color = new Color(1f, 0f, 0f, 0.1f);
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            // 경고 이펙트 제거
+            Destroy(warningEffect);
+        }
+
+        yield return new WaitForSeconds(0.5f);
+    }
+
+    /// <summary> 현재 웨이브에 해당하는 신화 유닛 데이터를 반환합니다. </summary>
+    private UnitData GetMythicEnemyDataForCurrentWave()
+    {
+        MythicRecipeConfig config = GameManager.Instance.queueManager.GetMythicRecipeConfig();
+        if (config == null) return null;
+
+        // 현재 웨이브에서 해금되는 신화 레시피 찾기
+        foreach (MythicRecipe recipe in config.ActiveRecipes)
+        {
+            if (recipe != null && recipe.unlockWave == currentWave && recipe.ResultUnit != null) return recipe.ResultUnit;
+        }
+
+        // 현재 웨이브에 해당하는 레시피가 없으면 
+        return null;
+    }
+
     #endregion
     
     public void RegisterEnemy(Enemy enemy)
@@ -179,6 +285,9 @@ public class WaveManager : MonoBehaviour
     {
         isWaveActive = false;
         
+        // 신화 해금 확인
+        CheckMythicUnlock();
+        
         // 웨이브 클리어 보상 계산 및 지급
         int waveReward = CalculateWaveReward();
         GameManager.Instance.AddGold(waveReward);
@@ -189,8 +298,10 @@ public class WaveManager : MonoBehaviour
         // UI 업데이트
         UIManager.Instance.UpdateGoldTextUI();
                 
-        foreach (var animal in UnitManager.Instance.activeUnits)
-            if (animal != null && !animal.IsDead()) animal.SetCanMove(false); // 움직임 정지
+        // foreach (var animal in UnitManager.Instance.activeUnits)
+        //     if (animal != null && !animal.IsDead()) animal.SetCanMove(false); // 움직임 정지
+
+        UnitManager.Instance.ResetUnitsToSpawnPosition();
             
         GameManager.Instance.CompleteWave();
     }
@@ -201,6 +312,66 @@ public class WaveManager : MonoBehaviour
         // 현재 웨이브 * 뽑기에 필요한 돈
         int drawCost = GameManager.Instance.goldCostPerBlock;
         return currentWave/drawCost + drawCost*5;
+    }
+
+    /// <summary> 현재 웨이브에서 해금되는 신화 유닛을 확인하고 해금합니다. </summary>
+    private void CheckMythicUnlock()
+    {
+        // QueueManager에서 신화 레시피 설정 가져오기
+        QueueManager queueManager =GameManager.Instance.queueManager;
+        if (queueManager == null) return;
+
+        // QueueManager의 public 메서드를 통해 mythicRecipeConfig 가져오기
+        MythicRecipeConfig config = queueManager.GetMythicRecipeConfig();
+        
+        if (config != null)
+        {
+            foreach (MythicRecipe recipe in config.ActiveRecipes)
+            {
+                if (recipe.unlockWave == currentWave && !recipe.isUnlocked)
+                {
+                    recipe.isUnlocked = true;
+                    Debug.Log($"Mythic unit '{recipe.Id}' unlocked at wave {currentWave}!");
+                    
+                    // 해금 알림 메시지
+                    UIManager.Instance?.ShowMessage($"<color=yellow>✨ {recipe.ResultUnit?.unitName} 해금! ✨</color>", 3f);
+                    
+                    // QueueManager에 버튼 상태 업데이트 요청
+                    queueManager.UpdateMythicButtonStates();
+                }
+            }
+        }
+    }
+
+    /// <summary> QueueManager의 mythicRecipeConfig를 순회하여 mythicEnemyWaves를 자동으로 채웁니다. </summary>
+    private void InitializeMythicEnemyWaves()
+    {
+        // 기존 웨이브 리스트 초기화
+        mythicEnemyWaves.Clear();
+
+        if (config != null)
+        {
+            foreach (MythicRecipe recipe in config.ActiveRecipes)
+            {
+                if (recipe != null && !mythicEnemyWaves.Contains(recipe.unlockWave)) 
+                {
+                    mythicEnemyWaves.Add(recipe.unlockWave);
+                    
+                    // 첫 번째 신화 레시피의 ResultUnit을 mythicEnemyData로 설정
+                    if (mythicEnemyData == null && recipe.ResultUnit != null)
+                    {
+                        mythicEnemyData = recipe.ResultUnit;
+                        Debug.Log($"WaveManager: Set mythicEnemyData to {recipe.ResultUnit.unitName}");
+                    }
+                }
+            }
+
+            // 웨이브 번호 순으로 정렬
+            mythicEnemyWaves.Sort();
+            
+            Debug.Log($"WaveManager: Initialized mythic enemy waves: [{string.Join(", ", mythicEnemyWaves)}]");
+        }
+        else Debug.LogWarning("WaveManager: mythicRecipeConfig를 찾을 수 없습니다.");
     }
 
     #endregion
@@ -243,7 +414,7 @@ public class WaveManager : MonoBehaviour
     }
 
     #endregion
-    
+
 
     #region Pool
     private void RegisterEnemyPool()

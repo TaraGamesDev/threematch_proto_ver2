@@ -8,7 +8,11 @@ using DG.Tweening;
 /// 게임 내에서 사용되는 유닛 블록을 나타내는 클래스
 /// UnitData를 기반으로 시각적 표현과 상호작용을 담당합니다.
 /// </summary>
-public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+public class UnitBlock : MonoBehaviour, 
+// IBeginDragHandler, 
+// IDragHandler, 
+// IEndDragHandler, 
+IPointerClickHandler
 {
     [Header("비주얼 컴포넌트")]
     public Image unitImage;                      // 유닛 이미지 (UI)
@@ -35,7 +39,7 @@ public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     [Header("상태")]
     public bool isDragging = false;
     public bool isSelected = false;
-    public bool isInQueue = false;          // 큐에 배치된 상태인지 여부
+    // public bool isInQueue = false;          // 큐에 배치된 상태인지 여부 - 현재 프로토에서 쓰지 않음 
     
     // 유닛 데이터
     public UnitData unitData;
@@ -50,8 +54,8 @@ public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     private bool originalSizeStored = false; // 원래 크기가 저장되었는지 여부
     
     // 이벤트
-    public System.Action<UnitBlock> OnBlockClicked; // 블록 클릭 이벤트 -> 유닛 스포너에서 구독 
-    public System.Action<UnitBlock, int> OnDroppedOnRow;
+    public System.Action<UnitBlock> OnBlockClicked; // 블록 클릭 이벤트 -> 구독 하여 사용 
+    // public System.Action<UnitBlock, int> OnDroppedOnRow; // 현재 프로토에서 쓰지 않음 
     
     private void Awake()
     {
@@ -116,71 +120,74 @@ public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (isInQueue) return; // 큐에 배치된 블록은 클릭 불가
         OnBlockClicked?.Invoke(this);
     }
     
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        if (isDragging || isInQueue) return;
-        
-        SetSelected(true);
-        
-        // 드래그 시작 준비
-        originalPosition = transform.position;
-        originalParent = transform.parent;
-        
-        isDragging = true;
-        
-        // 드래그 중인 블록을 최상위로 표시
-        transform.SetAsLastSibling();
-    }
-    
-    public void OnDrag(PointerEventData eventData)
-    {
-        if (!isDragging) return;
-        transform.position = eventData.position; // UI 좌표계에서 마우스 위치로 블록 이동
-    }
-    
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        if (!isDragging) return;
-        
-        isDragging = false;
-        
-        // 드롭할 행 찾기
-        int targetRow = FindTargetRow();
-        
-        if (targetRow >= 0) OnDroppedOnRow?.Invoke(this, targetRow); // 유효한 행에 드롭
-        else ReturnToOriginalPosition(); // 유효하지 않은 위치에 드롭 시 원래 위치로 복귀
 
-        SetSelected(false);
-    }
-    
-    /// <summary>
-    /// 현재 위치에서 가장 가까운 유효한 열을 찾습니다.
-    /// </summary>
-    /// <returns>열 인덱스 (유효하지 않으면 -1)</returns>
-    private int FindTargetRow()
-    {
-        QueueManager queueManager = GameManager.Instance.queueManager;
-        if (queueManager == null) return -1;
-        
-        // 마우스 위치에서 가장 가까운 열 찾기
-        Vector3 worldPosition = transform.position;
-        int closestColumn = queueManager.GetClosestColumn(worldPosition);
+    #region 현재 프로토에서 쓰지 않음 
+    // public void OnDrag(PointerEventData eventData)
+    // {
+    //     if (!isDragging) return;
+    //     transform.position = eventData.position; // UI 좌표계에서 마우스 위치로 블록 이동
+    // }
 
-        return closestColumn;
-    }
+    // public void OnBeginDrag(PointerEventData eventData)
+    // {
+    //     if (isDragging || isInQueue) return;
+        
+    //     SetSelected(true);
+        
+    //     // 드래그 시작 준비
+    //     originalPosition = transform.position;
+    //     originalParent = transform.parent;
+        
+    //     isDragging = true;
+        
+    //     // 드래그 중인 블록을 최상위로 표시
+    //     transform.SetAsLastSibling();
+    // }
+
+    // public void OnEndDrag(PointerEventData eventData)
+    // {
+    //     if (!isDragging) return;
+        
+    //     isDragging = false;
+        
+    //     // 드롭할 행 찾기
+    //     int targetRow = FindTargetRow();
+        
+    //     if (targetRow >= 0) OnDroppedOnRow?.Invoke(this, targetRow); // 유효한 행에 드롭
+    //     else ReturnToOriginalPosition(); // 유효하지 않은 위치에 드롭 시 원래 위치로 복귀
+
+    //     SetSelected(false);
+    // }
     
-    /// <summary>
-    /// 블록을 원래 위치로 되돌립니다.
-    /// </summary>
-    private void ReturnToOriginalPosition()
-    {
-        transform.position = originalPosition;
-        transform.SetParent(originalParent);
-    }
+    // /// <summary>
+    // /// 현재 위치에서 가장 가까운 유효한 열을 찾습니다.
+    // /// </summary>
+    // /// <returns>열 인덱스 (유효하지 않으면 -1)</returns>
+    // private int FindTargetRow()
+    // {
+    //     QueueManager queueManager = GameManager.Instance.queueManager;
+    //     if (queueManager == null) return -1;
+        
+    //     // 마우스 위치에서 가장 가까운 열 찾기
+    //     Vector3 worldPosition = transform.position;
+    //     int closestColumn = queueManager.GetClosestColumn(worldPosition);
+
+    //     return closestColumn;
+    // }
+    
+    // /// <summary>
+    // /// 블록을 원래 위치로 되돌립니다.
+    // /// </summary>
+    // private void ReturnToOriginalPosition()
+    // {
+    //     transform.position = originalPosition;
+    //     transform.SetParent(originalParent);
+    // }
+
+    #endregion
     
     #endregion
     
@@ -229,9 +236,26 @@ public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         }
     }
     
-    public void SetInQueue(bool inQueue)
+    // public void SetInQueue(bool inQueue)
+    // {
+    //     isInQueue = inQueue;
+    // }
+
+    public void ResetStateForPool()
     {
-        isInQueue = inQueue;
+        isDragging = false;
+        isSelected = false;
+        transform.localScale = normalScale;
+        SetAlpha(1f);
+        transform.DOKill();
+    }
+
+    public void PrepareForQueue()
+    {
+        isDragging = false;
+        isSelected = false;
+        transform.localScale = normalScale;
+        SetAlpha(1f);
     }
     
     public void SetBlockSize(float slotSize)
@@ -304,7 +328,7 @@ public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
         sequence.OnComplete(() =>
         {
             onComplete?.Invoke();
-            Destroy(gameObject);
+            PoolManager.Instance?.Release(gameObject);
         });
     }
     
@@ -335,4 +359,3 @@ public class UnitBlock : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
     
     #endregion
 }
-

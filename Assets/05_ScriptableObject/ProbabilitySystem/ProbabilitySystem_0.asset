@@ -18,24 +18,24 @@ MonoBehaviour:
   - tier: 2
     probability: 10
   - tier: 3
-    probability: 9
-  - tier: 4
     probability: 1
+  - tier: 4
+    probability: 0.5
   normalizedProbabilities:
   - tier: 1
     originalProbability: 89.2
-    normalizedProbability: 81.68498
-    cumulativeProbability: 81.68498
+    normalizedProbability: 88.57994
+    cumulativeProbability: 88.57994
   - tier: 2
     originalProbability: 10
-    normalizedProbability: 9.15751
-    cumulativeProbability: 90.84249
+    normalizedProbability: 9.930487
+    cumulativeProbability: 98.51043
   - tier: 3
-    originalProbability: 9
-    normalizedProbability: 8.241758
-    cumulativeProbability: 99.08425
-  - tier: 4
     originalProbability: 1
-    normalizedProbability: 0.9157509
+    normalizedProbability: 0.99304867
+    cumulativeProbability: 99.50348
+  - tier: 4
+    originalProbability: 0.5
+    normalizedProbability: 0.49652433
     cumulativeProbability: 100
-  totalProbabilitySum: 109.2
+  totalProbabilitySum: 100.7

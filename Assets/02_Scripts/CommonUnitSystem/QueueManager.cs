@@ -472,6 +472,30 @@ public class QueueManager : MonoBehaviour
         RelayoutQueue(onComplete: () => TryResolveQueue());
     }
 
+    /// <summary> 신화 버튼들의 상태를 업데이트합니다. (해금 상태 반영) </summary>
+    public void UpdateMythicButtonStates()
+    {
+        foreach (var buttonObj in mythicButtons)
+        {
+            if (buttonObj == null) continue;
+            
+            MythicSpawnButton mythicButton = buttonObj.GetComponent<MythicSpawnButton>();
+            if (mythicButton != null && mythicButton.assignedRecipe != null)
+            {
+                // 해금 상태에 따라 자물쇠 설정
+                mythicButton.SetLocked(!mythicButton.assignedRecipe.isUnlocked);
+            }
+        }
+    }
+
+    /// <summary> 신화 레시피 설정을 반환합니다. </summary>
+    public MythicRecipeConfig GetMythicRecipeConfig()
+    {
+        if (mythicRecipeConfig == null) {Debug.LogWarning("QueueManager: mythicRecipeConfig가 설정되지 않았습니다."); return null;}
+        Debug.Log($"QueueManager: GetMythicRecipeConfig");
+        return mythicRecipeConfig;
+    }
+
     #endregion
 
     #region Pool Helpers
