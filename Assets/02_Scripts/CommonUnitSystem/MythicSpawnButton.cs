@@ -23,6 +23,9 @@ public class MythicSpawnButton : MonoBehaviour
     [SerializeField] private float bounceDuration = 0.5f;
     [SerializeField] private Ease bounceEase = Ease.OutBounce;
 
+    [Header("Tooltip Settings")]
+    [SerializeField] private float tooltipDuration = 3f; // 툴팁 표시 시간
+
     [Header("Debug")]
     [SerializeField, ReadOnly] private MythicRecipe assignedRecipe;
     [SerializeField, ReadOnly] private int recipeStartIndex = -1;
@@ -80,11 +83,6 @@ public class MythicSpawnButton : MonoBehaviour
         if (buttonImage != null)
         {
             buttonImage.color = available ? activeColor : inactiveColor;
-        }
-
-        if (button != null)
-        {
-            button.interactable = available;
         }
 
         // 애니메이션 관리
@@ -151,20 +149,61 @@ public class MythicSpawnButton : MonoBehaviour
     /// <summary> 버튼 클릭 시 호출됩니다. </summary>
     private void OnButtonClicked()
     {
-        if (!isAvailable || assignedRecipe == null || queueManager == null || recipeStartIndex < 0)
+        if (assignedRecipe == null)
         {
-            Debug.LogWarning("MythicSpawnButton: Cannot spawn - missing data or not available");
+            Debug.LogWarning("MythicSpawnButton: No recipe assigned");
             return;
         }
 
-        Debug.Log($"MythicSpawnButton: Spawning mythic unit '{assignedRecipe.Id}' at index {recipeStartIndex}");
+        // 활성화된 버튼: 신화 유닛 소환
+        if (isAvailable && queueManager != null && recipeStartIndex >= 0)
+        {
+            Debug.Log($"MythicSpawnButton: Spawning mythic unit '{assignedRecipe.Id}' at index {recipeStartIndex}");
 
-        // QueueManager를 통해 신화 유닛 소환
-        queueManager.SpawnMythicUnit(assignedRecipe, recipeStartIndex);
+            // QueueManager를 통해 신화 유닛 소환
+            queueManager.SpawnMythicUnit(assignedRecipe, recipeStartIndex);
 
-        // 소환 후 버튼 비활성화
-        SetAvailable(false);
-        recipeStartIndex = -1;
+            // 소환 후 버튼 비활성화
+            SetAvailable(false);
+            recipeStartIndex = -1;
+        }
+        // 비활성화된 버튼: 레시피 툴팁 표시
+        else if (!isAvailable) ShowRecipeTooltip();
+        
+    }
+
+    /// <summary> 레시피 툴팁을 표시합니다. </summary>
+    private void ShowRecipeTooltip()
+    {
+        if (assignedRecipe == null) return;
+
+        // 레시피 정보 문자열 생성
+        string tooltipText = CreateRecipeTooltipText();
+        
+        // UIManager를 통해 툴팁 표시
+        if (UIManager.Instance != null) UIManager.Instance.ShowMessage(tooltipText, tooltipDuration);
+    }
+
+    /// <summary> 레시피 툴팁 텍스트를 생성합니다. </summary>
+    private string CreateRecipeTooltipText()
+    {
+        if (assignedRecipe == null) return "No recipe assigned";
+
+        string result = $"<color=orange>{assignedRecipe.ResultUnit.unitName}</color>\n";
+        
+        if (assignedRecipe.Sequence != null && assignedRecipe.Sequence.Count > 0)
+        {
+            result += "필요한 유닛: ";
+            for (int i = 0; i < assignedRecipe.Sequence.Count; i++)
+            {
+                if (assignedRecipe.Sequence[i] != null)
+                {
+                    result += $"{assignedRecipe.Sequence[i].unitName}";
+                    if (i < assignedRecipe.Sequence.Count - 1) result += " + ";
+                }
+            }
+        }
+        return result;
     }
 
     #endregion
@@ -195,6 +234,12 @@ public class MythicSpawnButton : MonoBehaviour
     private void TestBounceAnimation()
     {
         StartBounceAnimation();
+    }
+
+    [Sirenix.OdinInspector.Button]
+    private void TestShowTooltip()
+    {
+        ShowRecipeTooltip();
     }
 
     #endregion
