@@ -16,9 +16,9 @@ MonoBehaviour:
   description: "\uB0C9\uCCA0\uD55C \uBC88\uAC1C \uB9C8\uBC95\uC0AC!"
   unitSprite: {fileID: 1105982328, guid: 27cadda7732954891a349a4c21ce8bdd, type: 3}
   tier: 4
-  health: 100
-  attackDamage: 20
-  attackSpeed: 0.7
+  health: 1463
+  attackDamage: 758
+  attackSpeed: 2
   moveSpeed: 10
   attackRange: 400
   attackType: 3

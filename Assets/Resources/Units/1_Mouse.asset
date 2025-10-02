@@ -16,8 +16,8 @@ MonoBehaviour:
   description: "\uC791\uC740 \uBAB8\uC9D1\uC758 \uAE30\uBCF8 \uC804\uC0AC!"
   unitSprite: {fileID: 3139590038334684883, guid: 27cadda7732954891a349a4c21ce8bdd, type: 3}
   tier: 1
-  health: 50
-  attackDamage: 5
+  health: 172
+  attackDamage: 48
   attackSpeed: 1.5
   moveSpeed: 10
   attackRange: 80
