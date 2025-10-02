@@ -139,8 +139,9 @@ public class QueueManager : MonoBehaviour
 
         InsertBlock(unitData, blocks.Count);
         
-        // 레이아웃 애니메이션 완료 후 머지 확인
-        RelayoutQueue(onComplete: () => TryResolveQueue() );
+        // 머지 처리 중이 아닐 때만 즉시 재배치
+        if (!isProcessingMerges) RelayoutQueue(onComplete: () => TryResolveQueue());
+        
         return true;
     }
 
@@ -166,7 +167,7 @@ public class QueueManager : MonoBehaviour
         RemoveBlock(block);
         
         // 레이아웃 재정렬 후 머지 확인
-        RelayoutQueue(onComplete: () => TryResolveQueue());
+        if(!isProcessingMerges) RelayoutQueue(onComplete: () => TryResolveQueue());
     }
 
     #endregion
@@ -185,9 +186,11 @@ public class QueueManager : MonoBehaviour
         block.PrepareForQueue();
         block.OnBlockClicked += SpawnUnitFromBlock; // 이벤트 구독 추가
 
-        blocks.Insert(index, block); // 블록 리스트에 삽입
+        // 안전한 인덱스로 조정
+        int safeIndex = Mathf.Clamp(index, 0, blocks.Count);
+        blocks.Insert(safeIndex, block); // 블록 리스트에 삽입
         block.SetBlockSize(slotSize); // 블럭 크기 설정 
-        block.GetComponent<RectTransform>().anchoredPosition = slotLocalPositions[index]; // 위치 설정 
+        block.GetComponent<RectTransform>().anchoredPosition = slotLocalPositions[safeIndex]; // 위치 설정 
 
         block.PlaySpawnAnimation(); // 스폰 애니메이션 재생
 
@@ -380,6 +383,7 @@ public class QueueManager : MonoBehaviour
         if (pendingMerges.Count == 0)
         {
             isProcessingMerges = false;
+            RelayoutQueue(onComplete: () => TryResolveQueue()); // 모든 머지 완료 후 최종 재배치
             return;
         }
 
@@ -433,8 +437,9 @@ public class QueueManager : MonoBehaviour
         // 머지할 블록들을 큐에서 제거
         foreach (var block in mergeData.blocksToMerge) if (blocks.Contains(block)) RemoveBlock(block); 
 
-        // 결과 블록들 생성
-        for (int i = 0; i < mergeData.outputCount; i++) InsertBlock(mergeData.resultUnitData, mergeData.insertIndex);
+        // 결과 블록들 생성 (안전한 인덱스로 삽입)
+        int safeInsertIndex = Mathf.Clamp(mergeData.insertIndex, 0, blocks.Count);
+        for (int i = 0; i < mergeData.outputCount; i++) InsertBlock(mergeData.resultUnitData, safeInsertIndex + i);
 
         // 결과 메시지 표시
         if (!string.IsNullOrEmpty(mergeData.resultMessage)) UIManager.Instance?.ShowMessage(mergeData.resultMessage);
