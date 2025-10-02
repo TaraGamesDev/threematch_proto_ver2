@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Sirenix.OdinInspector;
+using System;
 
 /// <summary>
 /// Central coordinator for runtime game state. Handles player stats, wave scheduling,
@@ -53,6 +54,8 @@ public class GameManager : MonoBehaviour
     public int MaxHealth => maxHealth;
     public int PlayerShield => playerShield;
 
+    public MythicRecipeInfo mythicRecipeInfo = new();
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -72,12 +75,18 @@ public class GameManager : MonoBehaviour
         uiManager ??= FindObjectOfType<UIManager>();
         upgradeSystem ??= FindObjectOfType<UpgradeSystem>();
         combatManager ??= FindObjectOfType<CombatManager>();
+
+        if (ES3.FileExists(mythicRecipeInfoKey))
+            mythicRecipeInfo = ES3.Load<MythicRecipeInfo>(mythicRecipeInfoKey);
+        else
+            mythicRecipeInfo = new MythicRecipeInfo();
     }
 
     private void Start()
     {
         InitialisePlayerState();
         QueueInitialWave();
+        ES3.Save(mythicRecipeInfoKey, mythicRecipeInfo);
     }
 
     private void InitialisePlayerState()
@@ -119,6 +128,15 @@ public class GameManager : MonoBehaviour
     {
         if (waveManager == null) return;
         QueueWaveStart(waveManager.GetCurrentWave() + 1);
+    }
+
+    private readonly string mythicRecipeInfoKey = "MythicRecipeInfo";
+
+    public void UnlockMythicRecipe(int index)
+    {
+        if (index < 0 || index >= 5) return;
+        mythicRecipeInfo.SetUnlock(index, true);
+        ES3.Save(mythicRecipeInfoKey, mythicRecipeInfo);
     }
 
     public void AddGold(int amount)
@@ -235,5 +253,39 @@ public class GameManager : MonoBehaviour
         uiManager?.UpdateLevelText(playerLevel);
 
         QueueInitialWave();
+    }
+}
+
+[Serializable]
+public class MythicRecipeInfo
+{
+    public bool isFirstUnlock = false;
+    public bool isSecondUnlock = false;
+    public bool isThirdUnlock = false;
+    public bool isFourthUnlock = false;
+    public bool isFifthUnlock = false;
+
+    public bool this[int index]
+    {
+        get => index switch
+        {
+            0 => isFirstUnlock,
+            1 => isSecondUnlock,
+            2 => isThirdUnlock,
+            3 => isFourthUnlock,
+            4 => isFifthUnlock,
+            _ => false
+        };
+    }
+
+    public void SetUnlock(int index, bool value)
+    {
+        if (index < 0 || index >= 5) return;
+
+        if (index == 0) isFirstUnlock = value;
+        else if (index == 1) isSecondUnlock = value;
+        else if (index == 2) isThirdUnlock = value;
+        else if (index == 3) isFourthUnlock = value;
+        else if (index == 4) isFifthUnlock = value;
     }
 }

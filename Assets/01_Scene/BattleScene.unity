@@ -177,22 +177,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af342caa4ea7743129f72e0d7eb67474, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  applyOnStart: 1
-  applyOnUpdate: 1
-  topPadding: 0
-  bottomPadding: 0
-  leftPadding: 0
-  rightPadding: 0
-  showDebugInfo: 0
-  canvas: {fileID: 0}
-  canvasScaler: {fileID: 0}
-  canvasRectTransform: {fileID: 0}
-  lastSafeArea:
-    x: 0
-    y: 0
-    width: 0
-    height: 0
-  lastScreenSize: {x: 0, y: 0}
 --- !u!114 &148411406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -861,7 +845,7 @@ MonoBehaviour:
     priority: 1
     resultMessage: 
   orderedRules: []
-  mythicRecipeConfig: {fileID: 11400000, guid: 545443a8b659b4032a37f765339db71d, type: 2}
+  mythicRecipeConfig: {fileID: 11400000, guid: dbbee9949fe414c74a1595b10ce7aad0, type: 2}
   mythicButtonsContainer: {fileID: 715469122}
   mythicSpawnButtonPrefab: {fileID: 8051507831919703004, guid: 4b5ce4c53ef36447b84842025d26f7d2, type: 3}
 --- !u!1 &714046166
@@ -1575,8 +1559,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -890.7616}
-  m_SizeDelta: {x: 0, y: -2344.7556}
+  m_AnchoredPosition: {x: 0, y: -734.1919}
+  m_SizeDelta: {x: 0, y: -2031.6162}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1231455832
 MonoBehaviour:
@@ -2064,7 +2048,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37f86bf91673d487d9fa368f8fb68b51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startingGold: 2000
+  startingGold: 80
   goldCostPerBlock: 5
   playerLevel: 1
   currentExp: 0
@@ -2081,6 +2065,12 @@ MonoBehaviour:
   combatManager: {fileID: 0}
   playerTransform: {fileID: 1894781034}
   waveStartDelaySeconds: 5
+  mythicRecipeInfo:
+    isFirstUnlock: 0
+    isSecondUnlock: 0
+    isThirdUnlock: 0
+    isFourthUnlock: 0
+    isFifthUnlock: 0
 --- !u!1 &1751710298
 GameObject:
   m_ObjectHideFlags: 0
@@ -2417,6 +2407,9 @@ MonoBehaviour:
   spawnInterval: 2
   enemiesPerWave: 10
   monsterSpawnZone: {fileID: 163784400}
+  mythicEnemyWaves: 
+  config: {fileID: 11400000, guid: dbbee9949fe414c74a1595b10ce7aad0, type: 2}
+  mythicEnemyData: {fileID: 0}
   healthMultiplier: 1.2
   damageMultiplier: 1.1
   speedMultiplier: 1.05

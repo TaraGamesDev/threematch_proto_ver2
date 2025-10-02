@@ -326,11 +326,12 @@ public class WaveManager : MonoBehaviour
         
         if (config != null)
         {
+            int i = 0;
+
             foreach (MythicRecipe recipe in config.ActiveRecipes)
             {
-                if (recipe.unlockWave == currentWave && !recipe.isUnlocked)
+                if (recipe.unlockWave == currentWave && !GameManager.Instance.mythicRecipeInfo[i])
                 {
-                    recipe.isUnlocked = true;
                     Debug.Log($"Mythic unit '{recipe.Id}' unlocked at wave {currentWave}!");
                     
                     // 해금 알림 메시지
@@ -338,7 +339,11 @@ public class WaveManager : MonoBehaviour
                     
                     // QueueManager에 버튼 상태 업데이트 요청
                     queueManager.UpdateMythicButtonStates();
+
+                    GameManager.Instance.mythicRecipeInfo.SetUnlock(i, true);
                 }
+
+                i++;
             }
         }
     }

@@ -53,7 +53,7 @@ public class QueueManager : MonoBehaviour
 
     #region Initialize
 
-    private void Awake()
+    private void Start()
     {
         if (queueContainer == null) Debug.LogError("QueueManager: Queue container is not assigned");
         UnitDatabase.Initialize();
@@ -475,6 +475,8 @@ public class QueueManager : MonoBehaviour
     /// <summary> 신화 버튼들의 상태를 업데이트합니다. (해금 상태 반영) </summary>
     public void UpdateMythicButtonStates()
     {
+        int i = 0;
+
         foreach (var buttonObj in mythicButtons)
         {
             if (buttonObj == null) continue;
@@ -483,7 +485,8 @@ public class QueueManager : MonoBehaviour
             if (mythicButton != null && mythicButton.assignedRecipe != null)
             {
                 // 해금 상태에 따라 자물쇠 설정
-                mythicButton.SetLocked(!mythicButton.assignedRecipe.isUnlocked);
+                mythicButton.SetLocked(!GameManager.Instance.mythicRecipeInfo[i]);
+                i++;
             }
         }
     }

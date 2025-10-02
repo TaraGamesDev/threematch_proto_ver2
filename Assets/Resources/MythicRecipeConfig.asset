@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d46c6d42359b4fc7ab971bb97ff0fec, type: 3}
+  m_Name: MythicRecipeConfig
+  m_EditorClassIdentifier: 
+  recipes:
+  - {fileID: 11400000, guid: d951ec4d43cdc4075ab968635dd39558, type: 2}
+  - {fileID: 11400000, guid: d448e7fa68d534fc3bc9b96431bb8263, type: 2}
+  - {fileID: 11400000, guid: 34f4f6893e25c4f709dd79922222dfa2, type: 2}
+  - {fileID: 11400000, guid: daff40b544f3f483c9fb4930953b9058, type: 2}
+  - {fileID: 11400000, guid: 6fe0822d41c71480bb17a28fa146858c, type: 2}
