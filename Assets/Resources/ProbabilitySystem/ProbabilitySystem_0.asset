@@ -14,28 +14,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tierProbabilities:
   - tier: 1
-    probability: 89.2
+    probability: 97.47
   - tier: 2
-    probability: 10
+    probability: 1.95
   - tier: 3
-    probability: 1
+    probability: 0.49
   - tier: 4
-    probability: 0.5
+    probability: 0.1
   normalizedProbabilities:
   - tier: 1
-    originalProbability: 89.2
-    normalizedProbability: 88.57994
-    cumulativeProbability: 88.57994
+    originalProbability: 97.47
+    normalizedProbability: 97.46025
+    cumulativeProbability: 97.46025
   - tier: 2
-    originalProbability: 10
-    normalizedProbability: 9.930487
-    cumulativeProbability: 98.51043
+    originalProbability: 1.95
+    normalizedProbability: 1.949805
+    cumulativeProbability: 99.41006
   - tier: 3
-    originalProbability: 1
-    normalizedProbability: 0.99304867
-    cumulativeProbability: 99.50348
+    originalProbability: 0.49
+    normalizedProbability: 0.489951
+    cumulativeProbability: 99.90001
   - tier: 4
-    originalProbability: 0.5
-    normalizedProbability: 0.49652433
+    originalProbability: 0.1
+    normalizedProbability: 0.09999
     cumulativeProbability: 100
-  totalProbabilitySum: 100.7
+  totalProbabilitySum: 100.01
