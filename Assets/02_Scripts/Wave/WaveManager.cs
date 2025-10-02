@@ -45,6 +45,7 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private List<Enemy> activeEnemies = new List<Enemy>();
     [SerializeField] private int currentWave = 1;
     [SerializeField] private bool isWaveActive = false;
+    [SerializeField] private int currentWaveEnemyCount = 0;
     [SerializeField] private int enemiesSpawned = 0;
     [SerializeField] private int enemiesKilled = 0;
     
@@ -77,9 +78,9 @@ public class WaveManager : MonoBehaviour
         UnitManager.Instance.ResetUnitsStatsAndEnableMovement();
         
         // 웨이브에 따른 적 수 증가
-        int enemyCount = CalculateEnemyCount(waveNumber);
+        currentWaveEnemyCount = CalculateEnemyCount(waveNumber);
         
-        StartCoroutine(SpawnWave(enemyCount));
+        StartCoroutine(SpawnWave(currentWaveEnemyCount));
     }
     
     private int CalculateEnemyCount(int wave)
@@ -274,7 +275,7 @@ public class WaveManager : MonoBehaviour
 
     private void CheckWaveCompletion()
     {
-        if (isWaveActive && enemiesKilled >= enemiesSpawned && activeEnemies.Count == 0)
+        if (isWaveActive && enemiesKilled >= currentWaveEnemyCount && activeEnemies.Count == 0)
         {
             Debug.Log($"[WaveManager] CheckWaveCompletion - CompleteWave");
             CompleteWave();
