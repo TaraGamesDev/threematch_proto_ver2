@@ -137,6 +137,18 @@ public class QueueManager : MonoBehaviour
         UnitData unitData = GetRandomUnitForTier(tier);
         if (unitData == null) { Debug.LogWarning($"QueueManager: No UnitData available for tier {tier}."); return false; }
 
+        // 티어 3, 4 축하 메시지 (확률 정보 포함)
+        if (tier == UnitData.UnitTier.Tier3)
+        {
+            float probability = spawnProbabilityConfig.GetNormalizedProbability(tier);
+            UIManager.Instance?.ShowMessage($"🎉 축하합니다! {probability:F1}% 확률을 뚫고 티어 3 유닛을 획득했습니다!", 2.5f);
+        }
+        else if (tier == UnitData.UnitTier.Tier4)
+        {
+            float probability = spawnProbabilityConfig.GetNormalizedProbability(tier);
+            UIManager.Instance?.ShowMessage($"🌟 대박! {probability:F1}% 확률을 뚫고 티어 4 유닛을 획득했습니다!", 2.5f);
+        }
+
         InsertBlock(unitData, blocks.Count);
         
         // 머지 처리 중이 아닐 때만 즉시 재배치
