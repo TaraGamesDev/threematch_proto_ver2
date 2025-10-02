@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.Scripting;
 
 /// <summary>
 /// Individual mythic recipe as a ScriptableObject for easy management in the inspector.
 /// Each recipe defines a sequence of units that can be merged into a mythic unit.
 /// </summary>
-[CreateAssetMenu(fileName = "MythicRecipe", menuName = "Forest Guardians/Mythic Recipe")]
+[Preserve, CreateAssetMenu(fileName = "MythicRecipe", menuName = "Forest Guardians/Mythic Recipe")]
 public class MythicRecipe : ScriptableObject
 {
     [Tooltip("Identifier used in logs")] 
