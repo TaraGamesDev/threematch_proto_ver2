@@ -508,7 +508,6 @@ public class QueueManager : MonoBehaviour
     public MythicRecipeConfig GetMythicRecipeConfig()
     {
         if (mythicRecipeConfig == null) {Debug.LogWarning("QueueManager: mythicRecipeConfig가 설정되지 않았습니다."); return null;}
-        Debug.Log($"QueueManager: GetMythicRecipeConfig");
         return mythicRecipeConfig;
     }
 
