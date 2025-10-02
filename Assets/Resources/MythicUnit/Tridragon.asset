@@ -17,10 +17,10 @@ MonoBehaviour:
     \uD30C\uAD34\uC790! "
   unitSprite: {fileID: 6838265512916734616, guid: 07ad9970fa4724a969ba3a6967f99fa8, type: 3}
   tier: 0
-  health: 500
-  attackDamage: 150
-  attackSpeed: 0.9
-  moveSpeed: 10
+  health: 24000
+  attackDamage: 4400
+  attackSpeed: 1
+  moveSpeed: 160
   attackRange: 200
   attackType: 0
   attackPattern: 0
