@@ -152,7 +152,7 @@ public class Enemy : Unit
     {
         if (isDead) return;
 
-        Debug.Log($"[Enemy] {unitName} Die");
+        // Debug.Log($"[Enemy] {unitName} Die");
 
         // 골드 & 경험치 획득
         GameManager.Instance.AddGold(goldReward);

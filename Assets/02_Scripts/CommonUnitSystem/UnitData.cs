@@ -154,7 +154,7 @@ public static class UnitDatabase
                 if (!units.ContainsKey(unitId))
                 {
                     units[unitId] = unit;
-                    Debug.Log($"유닛 로드됨: {unit.unitName} (ID: {unitId})");
+                    // Debug.Log($"유닛 로드됨: {unit.unitName} (ID: {unitId})");
                 }
                 else
                 {

@@ -21,12 +21,13 @@ public class MythicRecipe : ScriptableObject
     
     [Tooltip("Number of result blocks inserted into the queue")] 
     public int OutputCount = 1;
-
-    [Tooltip("Optional message surfaced when the recipe resolves")] 
-    public string UnlockMessage = string.Empty;
     
     [Tooltip("이 신화 유닛이 해금되는 웨이브 번호")]
     public int unlockWave = 5;
+
+    [Header("Unlock Settings")]
+    [Tooltip("이 신화 유닛이 해금되었는지 여부")]
+    public bool isUnlocked = false;
 
     /// <summary>
     /// Validates that this recipe has all required data
@@ -38,16 +39,5 @@ public class MythicRecipe : ScriptableObject
                Sequence != null && 
                Sequence.Count > 0 && 
                Sequence.All(unit => unit != null);
-    }
-
-    /// <summary>
-    /// Gets a human-readable description of this recipe
-    /// </summary>
-    public string GetDescription()
-    {
-        if (!IsValid()) return "Invalid Recipe";
-        
-        var sequenceNames = Sequence.Select(unit => unit.name).ToArray();
-        return $"{Id}: {string.Join(" + ", sequenceNames)} → {ResultUnit.name}";
     }
 }

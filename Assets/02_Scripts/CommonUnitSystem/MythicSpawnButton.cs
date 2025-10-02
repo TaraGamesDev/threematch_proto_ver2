@@ -63,7 +63,7 @@ public class MythicSpawnButton : MonoBehaviour
         }
 
         // 초기 상태 설정
-        SetLocked(!GameManager.Instance.mythicRecipeInfo[recipeStartIndex]);
+        SetLocked(!recipe.isUnlocked);
         SetAvailable(false);
 
         // 버튼 클릭 이벤트 연결

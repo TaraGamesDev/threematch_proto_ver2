@@ -235,7 +235,7 @@ public class Unit : MonoBehaviour
     {
         if (isDead) return;
 
-        Debug.Log($"{unitName} Die");
+        // Debug.Log($"{unitName} Die");
         isDead = true;
         canMove = false;
         currentTarget = null;

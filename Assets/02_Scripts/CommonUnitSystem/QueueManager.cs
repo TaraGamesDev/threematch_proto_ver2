@@ -56,9 +56,10 @@ public class QueueManager : MonoBehaviour
     private void Start()
     {
         if (queueContainer == null) Debug.LogError("QueueManager: Queue container is not assigned");
-        UnitDatabase.Initialize();
-        RegisterBlockPool();
-        RecalculateSlots();
+
+        UnitDatabase.Initialize(); // 유닛 데이터 확인 
+        RegisterBlockPool(); // 풀에 등록 
+        RecalculateSlots(); // 슬롯 위치 계산 
         CreateMythicButtons(); // 신화 버튼들 생성
 
         orderedRules = mergeRules.OrderByDescending(r => r.priority).ToList(); // 우선순위 순서대로 정렬
@@ -100,8 +101,9 @@ public class QueueManager : MonoBehaviour
         
         mythicButtons.Clear();
 
-        // 각 신화 레시피에 대해 버튼 생성
-        foreach (MythicRecipe recipe in mythicRecipeConfig.ActiveRecipes)
+        // unlockWave 오름차순으로 정렬된 레시피들에 대해 버튼 생성
+        var sortedRecipes = mythicRecipeConfig.ActiveRecipes.OrderBy(recipe => recipe.unlockWave).ToList();
+        foreach (MythicRecipe recipe in sortedRecipes)
         {
             GameObject buttonObj = Instantiate(mythicSpawnButtonPrefab, mythicButtonsContainer);
             buttonObj.name = $"MythicButton_{recipe.Id}";
@@ -465,9 +467,6 @@ public class QueueManager : MonoBehaviour
         // 신화 유닛 소환
         for (int i = 0; i < recipe.OutputCount; i++) UnitManager.Instance?.SpawnUnitFromUnitData(recipe.ResultUnit);
 
-        // 결과 메시지 표시
-        if (!string.IsNullOrEmpty(recipe.UnlockMessage)) UIManager.Instance?.ShowMessage(recipe.UnlockMessage);
-
         // 레이아웃 재정렬 후 머지 확인
         RelayoutQueue(onComplete: () => TryResolveQueue());
     }
@@ -475,8 +474,6 @@ public class QueueManager : MonoBehaviour
     /// <summary> 신화 버튼들의 상태를 업데이트합니다. (해금 상태 반영) </summary>
     public void UpdateMythicButtonStates()
     {
-        int i = 0;
-
         foreach (var buttonObj in mythicButtons)
         {
             if (buttonObj == null) continue;
@@ -485,8 +482,7 @@ public class QueueManager : MonoBehaviour
             if (mythicButton != null && mythicButton.assignedRecipe != null)
             {
                 // 해금 상태에 따라 자물쇠 설정
-                mythicButton.SetLocked(!GameManager.Instance.mythicRecipeInfo[i]);
-                i++;
+                mythicButton.SetLocked(!mythicButton.assignedRecipe.isUnlocked);
             }
         }
     }

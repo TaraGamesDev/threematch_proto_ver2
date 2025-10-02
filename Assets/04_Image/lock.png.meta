@@ -142,12 +142,12 @@ TextureImporter:
       name: lock_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1024
-        height: 1024
+        x: 42
+        y: 46
+        width: 943
+        height: 878
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -164,7 +164,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 67c8c0ff4c2e244f0a6f56264a74c70b
     internalID: 0
     vertices: []
     indices: 
