@@ -119,8 +119,8 @@ public class WaveManager : MonoBehaviour
         Enemy enemy = GetEnemyFromPool();
         if (enemy == null) return;
 
-        // MonsterSpawnZone에서 랜덤 위치 계산
-        Vector3 spawnPosition = GetRandomMonsterSpawnPosition();
+        // MonsterSpawnZone의 중앙 위치에서 스폰
+        Vector3 spawnPosition = GetMonsterSpawnPosition();
         enemy.transform.position = spawnPosition;
         enemy.transform.rotation = Quaternion.identity;
 
@@ -133,20 +133,13 @@ public class WaveManager : MonoBehaviour
         enemy.SetCanMove(true);
     }
     
-    /// <summary> MonsterSpawnZone에서 랜덤한 스폰 위치를 계산합니다. </summary>
-    private Vector3 GetRandomMonsterSpawnPosition()
+    /// <summary> MonsterSpawnZone의 중앙 위치를 반환합니다. </summary>
+    private Vector3 GetMonsterSpawnPosition()
     {
         if (monsterSpawnZone == null) { Debug.LogWarning("WaveManager: monsterSpawnZone이 설정되지 않았습니다."); return Vector3.zero; }
         
-        // MonsterSpawnZone의 경계 내에서 랜덤 위치 계산
-        Rect rect = monsterSpawnZone.rect;
-        Vector3 zonePosition = monsterSpawnZone.position;
-        
-        // UI 좌표를 월드 좌표로 변환
-        float randomX = zonePosition.x + Random.Range(-rect.width * 0.5f, rect.width * 0.5f);
-        float y = zonePosition.y;
-        
-        return new Vector3(randomX, y, 0f);
+        // MonsterSpawnZone의 중앙 위치 반환
+        return monsterSpawnZone.position;
     }
     
     private void ApplyWaveScaling(Enemy enemy)
