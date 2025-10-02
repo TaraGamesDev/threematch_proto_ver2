@@ -15,7 +15,7 @@ MonoBehaviour:
   unitName: "\uD1A0\uB07C "
   description: "\uB3C4\uD1A0\uB9AC\uB97C \uB358\uC9C0\uB294 \uADC0\uC5EC\uC6B4 \uC6D0\uAC70\uB9AC
     \uACF5\uACA9\uC218!"
-  unitSprite: {fileID: -1346518835, guid: 27cadda7732954891a349a4c21ce8bdd, type: 3}
+  unitSprite: {fileID: 6937817954938267909, guid: 2e29737d21d37476b9ef9e363716066d, type: 3}
   tier: 1
   health: 50
   attackDamage: 5

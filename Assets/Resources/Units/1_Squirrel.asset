@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitName: "\uB2E4\uB78C\uC950"
   description: "\uBCF4\uBB3C\uC744 \uBAA8\uC73C\uB294 \uC695\uC2EC\uC7C1\uC774 \uC218\uC9D1\uAC00!"
-  unitSprite: {fileID: 7579966246130621718, guid: 469d2af78c893481ba3edbf22483ee08, type: 3}
+  unitSprite: {fileID: -6470460504253458178, guid: cb5ea47d2ba5e461d9c08debf620dc4c, type: 3}
   tier: 1
   health: 50
   attackDamage: 5
