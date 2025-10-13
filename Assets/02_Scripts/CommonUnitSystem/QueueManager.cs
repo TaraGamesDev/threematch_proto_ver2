@@ -10,6 +10,14 @@ using Sirenix.OdinInspector;
 /// </summary>
 public class QueueManager : MonoBehaviour
 {
+    public static QueueManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
     [Title("Settings")]
 
     [Tooltip("이 크기에 맞에 알아서 유닛 블럭의 크기가 조절됨")]
@@ -21,7 +29,6 @@ public class QueueManager : MonoBehaviour
 
     [Title("Generation & Pool")]
     [SerializeField] private UnitBlock unitBlockPrefab;
-    [SerializeField] private SpawnProbabilitySystem spawnProbabilityConfig;
     [SerializeField] private string blockPoolKey = "UnitBlock";
     [SerializeField, Min(0)] private int prewarmBlockCount = 9;
 
@@ -55,20 +62,13 @@ public class QueueManager : MonoBehaviour
 
     private void Start()
     {
-        if (queueContainer == null) Debug.LogError("QueueManager: Queue container is not assigned");
-
-        UnitDatabase.Initialize(); // 유닛 데이터 확인 
-        RegisterBlockPool(); // 풀에 등록 
-        RecalculateSlots(); // 슬롯 위치 계산 
-        CreateMythicButtons(); // 신화 버튼들 생성
-
         orderedRules = mergeRules.OrderByDescending(r => r.priority).ToList(); // 우선순위 순서대로 정렬
     }
 
     /// <summary> 슬롯 위치를 재계산합니다. 큐 컨테이너 크기에 따라 각 슬롯의 위치와 크기를 결정합니다. </summary>
-    private void RecalculateSlots()
+    public void RecalculateSlots()
     {
-        if (queueContainer == null || maxBlockCount <= 0) return;
+        if (queueContainer == null || maxBlockCount <= 0) {Debug.LogWarning("QueueManager: Queue container is not assigned"); return;}
 
         // 기존 슬롯 위치 초기화
         slotLocalPositions.Clear();
@@ -88,7 +88,7 @@ public class QueueManager : MonoBehaviour
     }
 
     /// <summary> 신화 레시피 개수만큼 버튼을 자동으로 생성합니다. </summary>
-    private void CreateMythicButtons()
+    public void CreateMythicButtons()
     {
         if (mythicRecipeConfig == null || mythicButtonsContainer == null || mythicSpawnButtonPrefab == null)
         {
@@ -116,6 +116,7 @@ public class QueueManager : MonoBehaviour
         Debug.Log($"QueueManager: Created {mythicButtons.Count} mythic spawn buttons.");
     }
 
+
     #endregion
 
 
@@ -126,26 +127,26 @@ public class QueueManager : MonoBehaviour
     /// <returns>스폰 성공 여부</returns>
     public bool TrySpawnBlock()
     {
-        if (unitBlockPrefab == null || spawnProbabilityConfig == null) { Debug.LogWarning("QueueManager: Prefab or spawn probability config missing."); return false; }
+        if (unitBlockPrefab == null) { Debug.LogWarning("QueueManager: UnitBlock prefab is missing."); return false; }
 
         // 큐가 가득 찬 경우 구매 불가
         if (blocks.Count >= maxBlockCount){Debug.LogWarning("QueueManager: Queue is full"); return false; }
 
         if (GameManager.Instance != null && !GameManager.Instance.SpendGold(GameManager.Instance.goldCostPerBlock)) return false;
 
-        UnitData.UnitTier tier = spawnProbabilityConfig.GetRandomTier();
+        UnitData.UnitTier tier = DatabaseProbabilitySystem.GetRandomTier();
         UnitData unitData = GetRandomUnitForTier(tier);
         if (unitData == null) { Debug.LogWarning($"QueueManager: No UnitData available for tier {tier}."); return false; }
 
         // 티어 3, 4 축하 메시지 (확률 정보 포함)
         if (tier == UnitData.UnitTier.Tier3)
         {
-            float probability = spawnProbabilityConfig.GetNormalizedProbability(tier);
+            float probability = DatabaseProbabilitySystem.GetProbabilityData(DatabaseProbabilitySystem.CurrentProbabilityLevel).tier3;
             UIManager.Instance?.ShowMessage($"🎉 축하합니다! {probability:F1}% 확률을 뚫고 티어 3 유닛을 획득했습니다!", 2.5f);
         }
         else if (tier == UnitData.UnitTier.Tier4)
         {
-            float probability = spawnProbabilityConfig.GetNormalizedProbability(tier);
+            float probability = DatabaseProbabilitySystem.GetProbabilityData(DatabaseProbabilitySystem.CurrentProbabilityLevel).tier4;
             UIManager.Instance?.ShowMessage($"🌟 대박! {probability:F1}% 확률을 뚫고 티어 4 유닛을 획득했습니다!", 2.5f);
         }
 
@@ -515,7 +516,7 @@ public class QueueManager : MonoBehaviour
 
     #region Pool Helpers
 
-    private void RegisterBlockPool()
+    public void RegisterBlockPool()
     {
         if (PoolManager.Instance == null) return;
         if (unitBlockPrefab == null){ Debug.LogWarning("QueueManager: unitBlockPrefab이 설정되지 않았습니다."); return; }
