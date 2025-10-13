@@ -137,4 +137,21 @@ public static class DatabaseProbabilitySystem
         Debug.LogWarning($"DatabaseProbabilitySystem: 레벨 {level}에 해당하는 확률 데이터를 찾을 수 없습니다. 기본 확률을 사용합니다.");
         return new ProbabilityData(60f, 30f, 8f, 2f); // 기본 확률
     }
+    
+    /// <summary>
+    /// 현재 확률 정보를 ShowMessage로 출력합니다.
+    /// </summary>
+    public static void ShowCurrentProbabilityInfo()
+    {
+        var probabilityData = GetProbabilityData(CurrentProbabilityLevel);
+        
+        string message = $"현재 확률 레벨: {CurrentProbabilityLevel}\n" +
+                        $"Tier1: {probabilityData.tier1:F1}%\n" +
+                        $"Tier2: {probabilityData.tier2:F1}%\n" +
+                        $"Tier3: {probabilityData.tier3:F1}%\n" +
+                        $"Tier4: {probabilityData.tier4:F1}%";
+        
+        UIManager.Instance?.ShowMessage(message, 3f);
+    }
+
 }

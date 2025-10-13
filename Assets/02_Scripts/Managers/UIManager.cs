@@ -19,11 +19,16 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text healthText;
     [SerializeField] private TMP_Text waveText;
 
+
     [Header("Message Banner")]
     [SerializeField] private CanvasGroup messagePanel;
     [SerializeField] private TMP_Text messageText;
     [SerializeField] private float messageFadeDuration = 0.35f;
     [SerializeField] private float messageVisibleDuration = 2.5f;
+
+    [Header("Probability Upgrade")]
+    [SerializeField] private Button probabilityInfoButton;
+
 
     private Coroutine messageRoutine;
 
@@ -42,6 +47,8 @@ public class UIManager : MonoBehaviour
             messagePanel.alpha = 0f;
             messagePanel.gameObject.SetActive(false);
         }
+        
+        if (probabilityInfoButton != null) probabilityInfoButton.onClick.AddListener(DatabaseProbabilitySystem.ShowCurrentProbabilityInfo);
     }
 
     public void UpdateGoldTextUI()
