@@ -10,15 +10,113 @@ using BansheeGz.BGDatabase;
 #pragma warning disable 414
 
 [Preserve]
+public sealed partial class Probability : BGEntity
+{
+	private static BansheeGz.BGDatabase.BGMetaRow _metaDefault;
+	public static BansheeGz.BGDatabase.BGMetaRow MetaDefault => _metaDefault ??= BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(5298912909122921268UL,6912849358955109559UL), () => _metaDefault = null);
+	public static BansheeGz.BGDatabase.BGRepoEvents Events => BGRepo.I.Events;
+	public static int CountEntities => MetaDefault.CountEntities;
+	public System.String name
+	{
+		get => _name[Index];
+		set => _name[Index] = value;
+	}
+	public System.Int32 LEVEL
+	{
+		get => _LEVEL[Index];
+		set => _LEVEL.SetValue(this, value);
+	}
+	public System.Single TIER1
+	{
+		get => _TIER1[Index];
+		set => _TIER1.SetValue(this, value);
+	}
+	public System.Single TIER2
+	{
+		get => _TIER2[Index];
+		set => _TIER2.SetValue(this, value);
+	}
+	public System.Single TIER3
+	{
+		get => _TIER3[Index];
+		set => _TIER3.SetValue(this, value);
+	}
+	public System.Single TIER4
+	{
+		get => _TIER4[Index];
+		set => _TIER4.SetValue(this, value);
+	}
+	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_name;
+	public static BansheeGz.BGDatabase.BGFieldEntityName _name => _ufle12jhs77_name ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(4906600728580266767UL, 7335849081565830569UL), () => _ufle12jhs77_name = null);
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_LEVEL;
+	public static BansheeGz.BGDatabase.BGFieldInt _LEVEL => _ufle12jhs77_LEVEL ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5126373095993783721UL, 10554114322207685006UL), () => _ufle12jhs77_LEVEL = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER1;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER1 => _ufle12jhs77_TIER1 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5101431824824119361UL, 14919320736063667880UL), () => _ufle12jhs77_TIER1 = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER2;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER2 => _ufle12jhs77_TIER2 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5020874716799985032UL, 8302249677796638337UL), () => _ufle12jhs77_TIER2 = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER3;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER3 => _ufle12jhs77_TIER3 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5354007127267975902UL, 3892713302346426011UL), () => _ufle12jhs77_TIER3 = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER4;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER4 => _ufle12jhs77_TIER4 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5505628079473925248UL, 12476367406908699325UL), () => _ufle12jhs77_TIER4 = null);
+	private Probability() : base(MetaDefault) {}
+	private Probability(BGId id) : base(MetaDefault, id) {}
+	private Probability(BGMetaEntity meta) : base(meta) {}
+	private Probability(BGMetaEntity meta, BGId id) : base(meta, id) {}
+	public static Probability FindEntity(Predicate<Probability> filter) => BGCodeGenUtils.FindEntity(MetaDefault, filter);
+	public static List<Probability> FindEntities(Predicate<Probability> filter, List<Probability> result=null, Comparison<Probability> sort=null) => BGCodeGenUtils.FindEntities(MetaDefault, filter, result, sort);
+	public static void ForEachEntity(Action<Probability> action, Predicate<Probability> filter=null, Comparison<Probability> sort=null) => BGCodeGenUtils.ForEachEntity(MetaDefault, action, filter, sort);
+	public static Probability GetEntity(BGId entityId) => (Probability) MetaDefault.GetEntity(entityId);
+	public static Probability GetEntity(int index) => (Probability) MetaDefault[index];
+	public static Probability GetEntity(string entityName) => (Probability) MetaDefault.GetEntity(entityName);
+	public static Probability NewEntity() => (Probability) MetaDefault.NewEntity();
+	public static Probability NewEntity(BGId entityId) => (Probability) MetaDefault.NewEntity(entityId);
+	public static Probability NewEntity(Action<Probability> callback) => (Probability) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((Probability)entity)));
+	public static void InitializeCodeGenRuntime()
+	{
+		_metaDefault = BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(5298912909122921268UL,6912849358955109559UL), ReleaseCodeGenRuntime);
+		_ufle12jhs77_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(_metaDefault, new BGId(4906600728580266767UL, 7335849081565830569UL));
+		_ufle12jhs77_LEVEL = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(_metaDefault, new BGId(5126373095993783721UL, 10554114322207685006UL));
+		_ufle12jhs77_TIER1 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5101431824824119361UL, 14919320736063667880UL));
+		_ufle12jhs77_TIER2 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5020874716799985032UL, 8302249677796638337UL));
+		_ufle12jhs77_TIER3 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5354007127267975902UL, 3892713302346426011UL));
+		_ufle12jhs77_TIER4 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5505628079473925248UL, 12476367406908699325UL));
+	}
+	public static void ReleaseCodeGenRuntime()
+	{
+		_metaDefault = null;
+		_ufle12jhs77_name = null;
+		_ufle12jhs77_LEVEL = null;
+		_ufle12jhs77_TIER1 = null;
+		_ufle12jhs77_TIER2 = null;
+		_ufle12jhs77_TIER3 = null;
+		_ufle12jhs77_TIER4 = null;
+	}
+
+	[Preserve]
+	public sealed class Factory : BGEntity.EntityFactory
+	{
+		public BGEntity NewEntity(BGMetaEntity meta) => new Probability(meta);
+		public BGEntity NewEntity(BGMetaEntity meta, BGId id) => new Probability(meta, id);
+	}
+
+	public static class __Names
+	{
+		public const string Meta = "Probability";
+		public const string name = "name";
+		public const string LEVEL = "LEVEL";
+		public const string TIER1 = "TIER1";
+		public const string TIER2 = "TIER2";
+		public const string TIER3 = "TIER3";
+		public const string TIER4 = "TIER4";
+	}
+}
+
+[Preserve]
 public static class BGCodeGenRuntimeInitializer
 {
 	[Preserve]
-	public static void InitializeCodeGenRuntime()
-	{
-	}
+	public static void InitializeCodeGenRuntime() => Probability.InitializeCodeGenRuntime();
 	[Preserve]
-	public static void ReleaseCodeGenRuntime()
-	{
-	}
+	public static void ReleaseCodeGenRuntime() => Probability.ReleaseCodeGenRuntime();
 }
 #pragma warning restore 414
