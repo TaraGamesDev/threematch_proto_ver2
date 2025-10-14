@@ -20,6 +20,11 @@ public class Init_Manager : MonoBehaviour
         QueueManager.Instance.CreateMythicButtons(); // 신화 버튼들 생성
 
         DatabaseProbabilitySystem.Initialize(); // 확률 데이터 베이스 초기화
+
+        LevelUpUpgradeSystem.Instance.InitializeAbilitiesCache(); // 업그레이드 능력들 미리 캐싱 
+
+        GameManager.Instance.InitialisePlayerState(); // 플레이어 상태 초기화
+        GameManager.Instance.QueueInitialWave(); // 초기 웨이브 큐 생성
     }
 
 }

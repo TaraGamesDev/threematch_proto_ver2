@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     public UnitManager unitManager;
     public WaveManager waveManager;
     public UIManager uiManager;
-    public UpgradeSystem upgradeSystem;
+    public LevelUpUpgradeSystem upgradeSystem;
     public CombatManager combatManager;
 
 
@@ -71,17 +71,12 @@ public class GameManager : MonoBehaviour
         unitManager ??= FindObjectOfType<UnitManager>();
         waveManager ??= FindObjectOfType<WaveManager>();
         uiManager ??= FindObjectOfType<UIManager>();
-        upgradeSystem ??= FindObjectOfType<UpgradeSystem>();
+        upgradeSystem ??= FindObjectOfType<LevelUpUpgradeSystem>();
         combatManager ??= FindObjectOfType<CombatManager>();
     }
 
-    private void Start()
-    {
-        InitialisePlayerState();
-        QueueInitialWave();
-    }
 
-    private void InitialisePlayerState()
+    public void InitialisePlayerState()
     {
         currentGold = Mathf.Max(0, startingGold);
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
@@ -94,7 +89,7 @@ public class GameManager : MonoBehaviour
         uiManager?.UpdateLevelText(playerLevel);
     }
 
-    private void QueueInitialWave()
+    public void QueueInitialWave()
     {
         if (waveManager == null) return;
         QueueWaveStart(Mathf.Max(1, waveManager.GetCurrentWave()));
@@ -159,7 +154,7 @@ public class GameManager : MonoBehaviour
         if (leveledUp)
         {
             uiManager?.UpdateLevelText(playerLevel);
-            upgradeSystem?.OfferLevelUpChoices(playerLevel);
+            upgradeSystem?.OnLevelUp();
         }
     }
 
