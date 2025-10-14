@@ -16,6 +16,7 @@ MonoBehaviour:
   description: "\uBA40\uB9AC\uC11C \uD3ED\uD0C4\uC744 \uB358\uC9C0\uB294 \uC7A5\uB09C\uAFB8\uB7EC\uAE30!"
   unitSprite: {fileID: -1595407293, guid: 27cadda7732954891a349a4c21ce8bdd, type: 3}
   tier: 3
+  unitPrefab: {fileID: 8790544177853992809, guid: 92ed724ac69ed4a109aa67f2a0b91c4c, type: 3}
   health: 1147
   attackDamage: 221
   attackSpeed: 2.5
