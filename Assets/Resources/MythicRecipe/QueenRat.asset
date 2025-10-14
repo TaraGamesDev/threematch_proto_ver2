@@ -15,12 +15,8 @@ MonoBehaviour:
   Id: QueenRat
   Sequence:
   - {fileID: 11400000, guid: 9bd21d04e8187412bb1e6b2004610480, type: 2}
-  - {fileID: 11400000, guid: 9bd21d04e8187412bb1e6b2004610480, type: 2}
-  - {fileID: 11400000, guid: cae78f1c583dc422594e2e892282836c, type: 2}
-  - {fileID: 11400000, guid: 9bd21d04e8187412bb1e6b2004610480, type: 2}
-  - {fileID: 11400000, guid: 9bd21d04e8187412bb1e6b2004610480, type: 2}
+  - {fileID: 11400000, guid: a3da157cbadd344bf885ff0e16f3db86, type: 2}
   ResultUnit: {fileID: 11400000, guid: eed02eeac30624a4cb8cee8ab25a665c, type: 2}
   OutputCount: 1
-  UnlockMessage: 
+  unlockWave: 7
   isUnlocked: 0
-  unlockWave: 2

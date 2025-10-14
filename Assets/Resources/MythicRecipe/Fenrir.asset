@@ -14,13 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MythicRecipe
   Id: Fenrir
   Sequence:
-  - {fileID: 11400000, guid: be5a62ace73f9493e869b50849abe5ad, type: 2}
-  - {fileID: 11400000, guid: a3da157cbadd344bf885ff0e16f3db86, type: 2}
-  - {fileID: 11400000, guid: be5a62ace73f9493e869b50849abe5ad, type: 2}
-  - {fileID: 11400000, guid: a3da157cbadd344bf885ff0e16f3db86, type: 2}
+  - {fileID: 11400000, guid: 36d6631235740470d97de7f31b928981, type: 2}
   - {fileID: 11400000, guid: be5a62ace73f9493e869b50849abe5ad, type: 2}
   ResultUnit: {fileID: 11400000, guid: db981023cf38c43549a129f2ba219cac, type: 2}
   OutputCount: 1
-  UnlockMessage: 
-  isUnlocked: 0
   unlockWave: 15
+  isUnlocked: 0

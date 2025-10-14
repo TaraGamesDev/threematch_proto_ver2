@@ -15,12 +15,8 @@ MonoBehaviour:
   Id: Genbu
   Sequence:
   - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
-  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
   - {fileID: 11400000, guid: 7e03ffdce2c1344d49ad35348c081c83, type: 2}
-  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
-  - {fileID: 11400000, guid: 7508116684f6a4cd7bd16d8f132e3a77, type: 2}
   ResultUnit: {fileID: 11400000, guid: acc26e62b17ae493086d1c21bc42e6d0, type: 2}
   OutputCount: 1
-  UnlockMessage: 
-  isUnlocked: 0
-  unlockWave: 10
+  unlockWave: 2
+  isUnlocked: 1
