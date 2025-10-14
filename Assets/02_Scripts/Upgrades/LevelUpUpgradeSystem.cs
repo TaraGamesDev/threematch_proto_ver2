@@ -20,6 +20,7 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     [Title("UI References")]
     [SerializeField] private GameObject upgradeCard;
     [SerializeField] private Transform upgradeCardsContainer;
+    [SerializeField] private GameObject LevelUpPanel;
 
     // 현재 플레이어의 업그레이드된 능력들 (ID를 키로 사용)
     [ShowInInspector, ReadOnly] private Dictionary<int, PlayerUpgrade> playerUpgrades = new Dictionary<int, PlayerUpgrade>();
@@ -79,7 +80,7 @@ public class LevelUpUpgradeSystem : MonoBehaviour
             Debug.LogError($"LevelUpUpgradeSystem: 능력 캐시 초기화 중 오류 발생: {e.Message}");
         }
 
-        upgradeCardsContainer.gameObject.SetActive(false);
+        LevelUpPanel.SetActive(false);
     }
 
     #endregion
@@ -188,11 +189,7 @@ public class LevelUpUpgradeSystem : MonoBehaviour
             return;
         }
 
-        if (GameManager.Instance.SpendGold(rerollCost))
-        {
-            GenerateUpgradeChoices();
-            UIManager.Instance?.ShowMessage("업그레이드가 새로고침되었습니다!", 1.5f);
-        }
+        if (GameManager.Instance.SpendGold(rerollCost)) GenerateUpgradeChoices();
     }
 
     #region Utility Methods
@@ -215,12 +212,12 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     #region Show/Hide Upgrade Selection Panel
     private void ShowUpgradeSelectionPanel()
     {
-        if (upgradeCardsContainer != null) upgradeCardsContainer.gameObject.SetActive(true);
+        if (LevelUpPanel != null) LevelUpPanel.SetActive(true);
     }
 
     private void HideUpgradeSelectionPanel()
     {
-        if (upgradeCardsContainer != null) upgradeCardsContainer.gameObject.SetActive(false);
+        if (LevelUpPanel != null) LevelUpPanel.SetActive(false);
         OnUpgradePanelClosed?.Invoke();
     }
 
