@@ -25,9 +25,6 @@ public class Unit : MonoBehaviour
 
 
     [Header("상태")]
-    public bool isSlowed = false;
-    public float slowMultiplier = 1f;
-    public float slowDuration = 0f;
     public bool canMove = true; // 움직임 제어
     
     private float originalMoveSpeed;
@@ -45,14 +42,7 @@ public class Unit : MonoBehaviour
     
     [Header("시각적 요소")]
     public SpriteRenderer spriteRenderer;
-    public GameObject attackEffect;
-    public CircleCollider2D detectionCollider;
 
-    
-    [Header("특수 능력")]
-    public GameObject acornProjectilePrefab; // 도토리 프리팹 (토끼용)
-    public GameObject bombProjectilePrefab; // 폭탄 프리팹 (원숭이용)
-    public GameObject hitEffectPrefab; // 타격 효과 프리팹
     
     [Header("애니메이션")]
     public float attackAnimationDuration = 0.3f;
@@ -75,9 +65,6 @@ public class Unit : MonoBehaviour
         isDead = false;
         canMove = true;
         currentTarget = null;
-        isSlowed = false;
-        slowMultiplier = 1f;
-        slowDuration = 0f;
         lastAttackTime = 0f;
 
         if (spriteRenderer != null) spriteRenderer.color = originalColor;
@@ -107,12 +94,6 @@ public class Unit : MonoBehaviour
             currentMoveSpeed = moveSpeed;
             currentAttackRange = attackRange;
             currentAttackSpeed = attackSpeed;
-            
-            // 유닛 이미지 설정
-            if (spriteRenderer != null && unitData.unitSprite != null) spriteRenderer.sprite = unitData.unitSprite;
-            
-            // 콜라이더 설정
-            SetupDetectionCollider();
         }
     }
     
@@ -145,17 +126,6 @@ public class Unit : MonoBehaviour
         return currentTarget == null || Time.time - lastTargetSearchTime >= searchInterval;
     }
     
-    protected void SetupDetectionCollider()
-    {
-        if (detectionCollider == null)
-        {
-            detectionCollider = GetComponent<CircleCollider2D>();
-            if (detectionCollider == null) detectionCollider = gameObject.AddComponent<CircleCollider2D>();
-        }
-        
-        detectionCollider.isTrigger = true;
-        detectionCollider.radius = currentAttackRange;
-    }
     
     protected virtual void Attack()
     {
@@ -209,6 +179,8 @@ public class Unit : MonoBehaviour
     
     protected void DamageFlash()
     {
+        transform.DOKill();
+
         // SpriteRenderer가 있는 경우
         if (spriteRenderer != null)
         {
@@ -217,6 +189,7 @@ public class Unit : MonoBehaviour
                     spriteRenderer.DOColor(originalColor, damageFlashDuration * 0.5f);
                 });
         }
+
         // UI Image가 있는 경우
         else
         {
@@ -256,10 +229,5 @@ public class Unit : MonoBehaviour
     public void SetCanMove(bool canMove)
     {
         this.canMove = canMove;
-    }
-    
-    public bool CanMove()
-    {
-        return canMove;
     }
 }
