@@ -17,6 +17,7 @@ MonoBehaviour:
     \uC9C0\uD718\uAD00! "
   unitSprite: {fileID: 7625207866563261708, guid: 513a7da11cbbf459594c454a081b18ea, type: 3}
   tier: 0
+  unitPrefab: {fileID: 8790544177853992809, guid: f02f735412cc94546ba81ac6b9481e61, type: 3}
   health: 8400
   attackDamage: 1800
   attackSpeed: 1

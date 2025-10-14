@@ -16,8 +16,17 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text goldText;
     [SerializeField] private TMP_Text expText;
     [SerializeField] private TMP_Text levelText;
-    [SerializeField] private TMP_Text healthText;
     [SerializeField] private TMP_Text waveText;
+
+    
+    [Header("Player Health")]
+    [SerializeField] private Image playerHealthBar;
+    [SerializeField] private TMP_Text healthText;
+    
+    
+    [Header("Enemy Base Health")]
+    [SerializeField] private TMP_Text enemyBaseHealthText;
+    [SerializeField] private Image enemyBaseHealthBar;
 
 
     [Header("Message Banner")]
@@ -78,22 +87,44 @@ public class UIManager : MonoBehaviour
 
     public void UpdatePlayerHealthUI()
     {
-        if (healthText == null) return;
         if (GameManager.Instance == null)
         {
-            healthText.text = "HP 0/0";
+            Debug.LogWarning("GameManager.Instance is null");
+            if (healthText != null) healthText.text = "0/0";
+            if (playerHealthBar != null) playerHealthBar.fillAmount = 0f;
             return;
         }
 
-        int shield = GameManager.Instance.PlayerShield;
-        string shieldSuffix = shield > 0 ? $" (+{shield})" : string.Empty;
-        healthText.text = $"HP {GameManager.Instance.CurrentHealth}/{GameManager.Instance.MaxHealth}{shieldSuffix}";
+        // 텍스트 업데이트
+        if (healthText != null) healthText.text = $"{GameManager.Instance.CurrentHealth}/{GameManager.Instance.MaxHealth}";
+        
+        // HealthBar 업데이트
+        if (playerHealthBar != null)
+        {
+            float healthPercentage = (float)GameManager.Instance.CurrentHealth / GameManager.Instance.MaxHealth;
+            playerHealthBar.fillAmount = healthPercentage;
+        }
     }
 
     public void UpdateWaveText(int wave)
     {
         if (waveText == null) return;
         waveText.text = $"Wave {wave}";
+    }
+
+    public void UpdateEnemyBaseHealthUI()
+    {
+        if (WaveManager.Instance == null) return;
+        
+        // 텍스트 업데이트
+        if (enemyBaseHealthText != null) enemyBaseHealthText.text = $"{WaveManager.Instance.BaseCurrentHealth}/{WaveManager.Instance.BaseMaxHealth}";
+        
+        // HealthBar 업데이트
+        if (enemyBaseHealthBar != null)
+        {
+            float healthPercentage = (float)WaveManager.Instance.BaseCurrentHealth / WaveManager.Instance.BaseMaxHealth;
+            enemyBaseHealthBar.fillAmount = healthPercentage;
+        }
     }
 
     public void ShowMessage(string message)

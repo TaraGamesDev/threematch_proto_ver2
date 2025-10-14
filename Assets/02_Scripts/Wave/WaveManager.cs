@@ -21,22 +21,19 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private Image WarningImage;
     
     [Title("스폰 존 설정")]
-    [Tooltip("몬스터가 스폰될 UI 패널 (랜덤 x위치에서 스폰)")]
     public RectTransform monsterSpawnZone;
 
-    [Title("신화 적 설정")]
-    [Tooltip("신화 유닛이 적으로 출현하는 웨이브 번호들")]
-    public List<int> mythicEnemyWaves = new List<int>();
-    
+
     [Tooltip("신화 적으로 스폰될 유닛 데이터")]
     [SerializeField] private MythicRecipeConfig config;
-    public UnitData mythicEnemyData;
+    [SerializeField, ReadOnly] private List<int> mythicEnemyWaves = new List<int>();
 
     
     [Header("웨이브 진행에 따른 증가율")]
-    public float healthMultiplier = 1.2f;
-    public float damageMultiplier = 1.1f;
-    public float speedMultiplier = 1.05f;
+    [SerializeField] float healthMultiplier = 1.2f;
+    [SerializeField] float damageMultiplier = 1.1f;
+    [SerializeField] float speedMultiplier = 1.05f;
+    [SerializeField] float baseHealthMultiplier = 1.5f; // 웨이브당 체력 증가율
 
 
     [Title("오브젝트 풀")]
@@ -51,6 +48,19 @@ public class WaveManager : MonoBehaviour
     [SerializeField] private int currentWaveEnemyCount = 0;
     [SerializeField] private int enemiesSpawned = 0;
     [SerializeField] private int enemiesKilled = 0;
+    [SerializeField] private bool isBaseDestroyed = false;
+    
+    
+    [Title("Enemy Base Health")]
+    [SerializeField] private Transform enemyBaseTransform; // 적 기지 Transform
+    [SerializeField] private int baseMaxHealth = 100;
+    [SerializeField] private int baseCurrentHealth = 100;
+
+
+    public int BaseCurrentHealth => baseCurrentHealth;
+    public int BaseMaxHealth => baseMaxHealth;
+    public Transform EnemyBaseTransform => enemyBaseTransform;
+    
     
     private void Awake()
     {
@@ -65,6 +75,8 @@ public class WaveManager : MonoBehaviour
         InitializeMythicEnemyWaves();
     }
     
+    #region Wave Start 
+
     public void StartWave(int waveNumber)
     {
         Debug.Log($"[WaveManager] StartWave {waveNumber}");
@@ -73,9 +85,13 @@ public class WaveManager : MonoBehaviour
         isWaveActive = true;
         enemiesSpawned = 0;
         enemiesKilled = 0;
+        isBaseDestroyed = false;
         
         // 웨이브 변경 이벤트 발생
         OnWaveChanged?.Invoke(currentWave);
+        
+        // 기지 체력 초기화 및 증가
+        InitializeBaseHealthForWave(waveNumber);
         
         // 유닛들의 스탯 초기화 및 움직임 활성화
         UnitManager.Instance.ResetUnitsStatsAndEnableMovement();
@@ -83,7 +99,7 @@ public class WaveManager : MonoBehaviour
         // 웨이브에 따른 적 수 증가
         currentWaveEnemyCount = CalculateEnemyCount(waveNumber);
         
-        StartCoroutine(SpawnWave(currentWaveEnemyCount));
+        StartCoroutine(SpawnEnemies(currentWaveEnemyCount));
     }
     
     private int CalculateEnemyCount(int wave)
@@ -91,12 +107,15 @@ public class WaveManager : MonoBehaviour
         // 웨이브가 증가할수록 적 수 증가
         // return enemiesPerWave + (wave - 1) * 5;
         return enemiesPerWave;
-
     }
+
+    #endregion
+
+    #region Spawn Enemies
     
-    private IEnumerator SpawnWave(int enemyCount)
+    private IEnumerator SpawnEnemies(int enemyCount)
     {
-        Debug.Log($"[WaveManager] SpawnWave - enemyCount : {enemyCount}");
+        Debug.Log($"[WaveManager] SpawnEnemies - enemyCount : {enemyCount}");
         
         // 신화 적 웨이브인지 확인
         bool isMythicWave = mythicEnemyWaves.Contains(currentWave);
@@ -115,8 +134,8 @@ public class WaveManager : MonoBehaviour
             yield return new WaitForSeconds(spawnInterval);
         }
     }
-    
-    #region Spawn Enemy
+
+    /// <summary> 일반 적 스폰  </summary>
     private void SpawnEnemy()
     {
         if (enemyPrefab == null || enemyUnitData == null) return;
@@ -124,9 +143,9 @@ public class WaveManager : MonoBehaviour
         Enemy enemy = GetEnemyFromPool();
         if (enemy == null) return;
 
-        // MonsterSpawnZone의 중앙 위치에서 스폰
-        Vector3 spawnPosition = GetMonsterSpawnPosition();
-        enemy.transform.position = spawnPosition;
+        if (monsterSpawnZone == null) { Debug.LogWarning("WaveManager: monsterSpawnZone이 설정되지 않았습니다."); return; }
+
+        enemy.transform.position = monsterSpawnZone.position;
         enemy.transform.rotation = Quaternion.identity;
 
         // UnitData로 기본 스탯 설정
@@ -136,15 +155,7 @@ public class WaveManager : MonoBehaviour
         // 웨이브에 따른 스탯 증가 적용
         ApplyWaveScaling(enemy);
         enemy.SetCanMove(true);
-    }
-    
-    /// <summary> MonsterSpawnZone의 중앙 위치를 반환합니다. </summary>
-    private Vector3 GetMonsterSpawnPosition()
-    {
-        if (monsterSpawnZone == null) { Debug.LogWarning("WaveManager: monsterSpawnZone이 설정되지 않았습니다."); return Vector3.zero; }
-        
-        // MonsterSpawnZone의 중앙 위치 반환
-        return monsterSpawnZone.position;
+        RegisterEnemy(enemy);
     }
     
     private void ApplyWaveScaling(Enemy enemy)
@@ -185,10 +196,6 @@ public class WaveManager : MonoBehaviour
         // 신화 적 데이터로 설정
         mythicEnemy.unitData = currentMythicData;
         mythicEnemy.GetComponent<Image>().sprite = currentMythicData.unitSprite;
-        // mythicEnemy.Init();
-
-        // 웨이브에 따른 스탯 증가 적용 (일반 적과 동일)
-        ApplyWaveScaling(mythicEnemy);
         
         // 신화 적 추가 보너스: 3배 강화
         mythicEnemy.currentHealth = Mathf.RoundToInt(mythicEnemy.currentHealth * 1.5f);
@@ -198,6 +205,7 @@ public class WaveManager : MonoBehaviour
         mythicEnemy.currentAttackRange = mythicEnemy.currentAttackRange * 2f;
 
         mythicEnemy.SetCanMove(true);
+        RegisterEnemy(mythicEnemy);
 
         Debug.Log($"Mythic Enemy spawned at wave {currentWave}!");
     }
@@ -245,6 +253,8 @@ public class WaveManager : MonoBehaviour
     }
 
     #endregion
+
+    #region Register Enemy
     
     public void RegisterEnemy(Enemy enemy)
     {
@@ -263,14 +273,46 @@ public class WaveManager : MonoBehaviour
         }
     }
     
+    #endregion
+
+    #region Enemy Base Destroyed
+
+    /// <summary> 적 기지가 파괴되었을 때 호출됩니다. </summary>
+    public void OnEnemyBaseDestroyed()
+    {
+        if (!isWaveActive || isBaseDestroyed) return;
+        
+        Debug.Log($"[WaveManager] Enemy base destroyed at wave {currentWave}!");
+        isBaseDestroyed = true;
+        
+        // 남은 몬스터가 있다면 일괄 스폰
+        if (enemiesSpawned < currentWaveEnemyCount) SpawnRemainingEnemies();
+        else CheckWaveCompletion(); // 남은 몬스터가없으면 웨이브 완료 체크
+    }
+
+    /// <summary> 기지 파괴 시 남은 몬스터들을 일괄 스폰합니다. </summary>
+    private void SpawnRemainingEnemies()
+    {
+        int remainingEnemies = currentWaveEnemyCount - enemiesSpawned;
+        Debug.Log($"[WaveManager] Spawning {remainingEnemies} remaining enemies after base destruction");
+        
+        for (int i = 0; i < remainingEnemies; i++)
+        {
+            SpawnEnemy();
+            enemiesSpawned++;
+        }
+    }
+
+    #endregion
 
     #region Check Wave Completion
 
     private void CheckWaveCompletion()
     {
-        if (isWaveActive && enemiesKilled >= currentWaveEnemyCount && activeEnemies.Count == 0)
+        // 기지가 파괴되었고, 모든 몬스터가 스폰되었으며, 모든 몬스터가 죽었을 때 웨이브 클리어
+        if (isWaveActive && isBaseDestroyed && enemiesSpawned >= currentWaveEnemyCount && activeEnemies.Count == 0)
         {
-            Debug.Log($"[WaveManager] CheckWaveCompletion - CompleteWave");
+            Debug.Log($"[WaveManager] CheckWaveCompletion - CompleteWave (Base destroyed, all enemies killed)");
             CompleteWave();
         }
     }
@@ -376,24 +418,10 @@ public class WaveManager : MonoBehaviour
         if (config != null)
         {
             foreach (MythicRecipe recipe in config.ActiveRecipes)
-            {
-                if (recipe != null && !mythicEnemyWaves.Contains(recipe.unlockWave)) 
-                {
-                    mythicEnemyWaves.Add(recipe.unlockWave);
-                    
-                    // 첫 번째 신화 레시피의 ResultUnit을 mythicEnemyData로 설정
-                    if (mythicEnemyData == null && recipe.ResultUnit != null)
-                    {
-                        mythicEnemyData = recipe.ResultUnit;
-                        Debug.Log($"WaveManager: Set mythicEnemyData to {recipe.ResultUnit.unitName}");
-                    }
-                }
-            }
+                if (recipe != null && !mythicEnemyWaves.Contains(recipe.unlockWave)) mythicEnemyWaves.Add(recipe.unlockWave);
 
             // 웨이브 번호 순으로 정렬
             mythicEnemyWaves.Sort();
-            
-            Debug.Log($"WaveManager: Initialized mythic enemy waves: [{string.Join(", ", mythicEnemyWaves)}]");
         }
         else Debug.LogWarning("WaveManager: mythicRecipeConfig를 찾을 수 없습니다.");
     }
@@ -435,6 +463,32 @@ public class WaveManager : MonoBehaviour
     public int GetTotalEnemiesInWave()
     {
         return enemiesSpawned;
+    }
+    
+    // 기지 체력 관련 프로퍼티
+    
+    /// <summary> 적 기지에 데미지를 입힙니다. </summary>
+    public void DamageEnemyBase(int amount)
+    {
+        if (amount <= 0) return;
+        
+        baseCurrentHealth = Mathf.Max(0, baseCurrentHealth - amount);
+        UIManager.Instance?.UpdateEnemyBaseHealthUI();
+        
+        // 기지 파괴 시 웨이브 클리어 체크
+        if (baseCurrentHealth <= 0) OnEnemyBaseDestroyed();
+    }
+
+    /// <summary> 웨이브 시작 시 기지 체력을 초기화하고 증가시킵니다. </summary>
+    public void InitializeBaseHealthForWave(int waveNumber)
+    {
+        // 웨이브에 따른 최대 체력 증가
+        baseMaxHealth = Mathf.RoundToInt(baseMaxHealth * baseHealthMultiplier);
+        baseCurrentHealth = baseMaxHealth;
+        
+        UIManager.Instance?.UpdateEnemyBaseHealthUI();
+        
+        Debug.Log($"Wave {waveNumber}: Enemy base health initialized to {baseCurrentHealth}/{baseMaxHealth}");
     }
 
     #endregion
