@@ -10,14 +10,15 @@ public class UnitManager : MonoBehaviour
     
     
     [Title("오브젝트 풀")]
-    public GameObject unitPrefab;
-    [SerializeField] private string unitPoolKey = "player-unit";
     [SerializeField, Min(0)] private int prewarmUnitCount = 5;
+    
+    // 각 유닛별 오브젝트 풀 관리
+    private Dictionary<string, string> unitPoolKeys = new Dictionary<string, string>();
 
     
     [Title("웨이브 설정")]
     [Tooltip("유닛이 스폰될 UI 패널 (UnitBlock의 x좌표에 맞춰 스폰)")]
-    public RectTransform unitSpawnZone;
+    public RectTransform unitSpawnParent;
     public Transform unitStopPos; // 유닛들이 멈출 위치
 
     [Tooltip("타겟 검색 간격")]
@@ -35,7 +36,6 @@ public class UnitManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        RegisterUnitPool();
     }
     
     private void Start()
@@ -48,23 +48,24 @@ public class UnitManager : MonoBehaviour
     {
         if (block == null || block.unitData == null) return;
         
-        Animal animal = GetUnitFromPool();
+        // UnitData의 프리팹을 직접 사용
+        if (block.unitData.unitPrefab == null){ Debug.LogWarning($"UnitManager: {block.unitData.unitName}의 unitPrefab이 설정되지 않았습니다."); return; }
+        
+        Animal animal = GetUnitFromPool(block.unitData);
         if (animal == null) return;
 
-        if(unitSpawnZone == null){ Debug.LogWarning("UnitManager: unitSpawnZone이 설정되지 않았습니다."); return; }
+        if(unitSpawnParent == null){ Debug.LogWarning("UnitManager: unitSpawnParent이 설정되지 않았습니다."); return; }
         
-        Transform parent = unitSpawnZone;
+        Transform parent = unitSpawnParent;
         animal.transform.SetParent(parent, false);
         
-        // UnitBlock의 x좌표를 UnitSpawnZone에 맞춰 스폰 위치 계산
-        Vector3 spawnPosition = GetUnitSpawnPosition(block);
-        animal.transform.position = spawnPosition;
+        // 플레이어 위치에서 스폰
+        if(GameManager.Instance.playerTransform == null){ Debug.LogWarning("UnitManager: GameManager.Instance.playerTransform이 설정되지 않았습니다."); return; }
+
+        animal.transform.position = GameManager.Instance.playerTransform.position;
         animal.transform.rotation = Quaternion.identity;
 
         animal.unitData = block.unitData;
-        var image = animal.GetComponent<Image>();
-        if (image != null) image.sprite = block.unitData.unitSprite;
-
         animal.Init();
         UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal);
         animal.SetCanMove(WaveManager.Instance.IsWaveActive());
@@ -77,24 +78,25 @@ public class UnitManager : MonoBehaviour
     {
         if (unitData == null) return;
         
-        Animal animal = GetUnitFromPool();
+        // UnitData의 프리팹을 직접 사용
+        if (unitData.unitPrefab == null){ Debug.LogWarning($"UnitManager: {unitData.unitName}의 unitPrefab이 설정되지 않았습니다."); return; }
+        
+        Animal animal = GetUnitFromPool(unitData);
         if (animal == null) return;
 
-        if(unitSpawnZone == null){ Debug.LogWarning("UnitManager: unitSpawnZone이 설정되지 않았습니다."); return; }
+        if(unitSpawnParent == null){ Debug.LogWarning("UnitManager: unitSpawnParent이 설정되지 않았습니다."); return; }
         
-        Transform parent = unitSpawnZone;
+        Transform parent = unitSpawnParent;
         animal.transform.SetParent(parent, false);
         
-        // UnitSpawnZone의 중앙에서 스폰
-        Vector3 spawnPosition = unitSpawnZone.position;
-        animal.transform.position = spawnPosition;
+        // 플레이어 위치에서 스폰
+        if(GameManager.Instance.playerTransform == null){ Debug.LogWarning("UnitManager: GameManager.Instance.playerTransform이 설정되지 않았습니다."); return; }
+
+        animal.transform.position = GameManager.Instance.playerTransform.position;;
         animal.transform.rotation = Quaternion.identity;
         animal.transform.localScale = Vector3.one * 2f;
 
         animal.unitData = unitData;
-        var image = animal.GetComponent<Image>();
-        if (image != null) image.sprite = unitData.unitSprite;
-
         animal.Init();
         UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal);
         animal.SetCanMove(WaveManager.Instance.IsWaveActive());
@@ -102,19 +104,6 @@ public class UnitManager : MonoBehaviour
         if (!activeUnits.Contains(animal)) activeUnits.Add(animal);
     }
 
-    /// <summary> UnitBlock의 x좌표를 UnitSpawnZone에 맞춰 스폰 위치를 계산합니다. </summary>
-    private Vector3 GetUnitSpawnPosition(UnitBlock block)
-    {
-        if (unitSpawnZone == null){ Debug.LogWarning("UnitManager: unitSpawnZone이 설정되지 않았습니다."); return Vector3.zero; }
-        
-        // UnitBlock의 x좌표를 가져옴
-        float blockX = block.transform.position.x;
-        
-        // UnitSpawnZone의 y좌표를 사용하고, UnitBlock의 x좌표를 유지
-        Vector3 zonePosition = unitSpawnZone.position;
-        
-        return new Vector3(blockX, zonePosition.y, 0f);
-    }
 
     #endregion
 
@@ -135,7 +124,7 @@ public class UnitManager : MonoBehaviour
     // 웨이브 완료 시 모든 유닛을 스폰 포지션으로 되돌리기
     public void ResetUnitsToSpawnPosition()
     {
-        if (unitSpawnZone == null) return;
+        if (unitSpawnParent == null) return;
         
         foreach (var animal in activeUnits)
         {
@@ -145,7 +134,7 @@ public class UnitManager : MonoBehaviour
                 
                 // x위치는 그대로 두고 y좌표만 스폰 위치로 되돌리기
                 Vector3 currentPosition = animal.transform.position;
-                Vector3 spawnPosition = new Vector3(currentPosition.x, unitSpawnZone.position.y, currentPosition.z);
+                Vector3 spawnPosition = new Vector3(currentPosition.x, unitSpawnParent.position.y, currentPosition.z);
                 animal.transform.position = spawnPosition;
                 
                 animal.currentTarget = null; // 타겟 초기화
@@ -167,21 +156,34 @@ public class UnitManager : MonoBehaviour
     }
 
     #region Pool
-    private void RegisterUnitPool()
+    /// <summary> 특정 유닛의 오브젝트 풀을 등록합니다. </summary>
+    private void RegisterUnitPool(UnitData unitData)
     {
-        if (PoolManager.Instance == null) return;
-        if (unitPrefab == null){ Debug.LogWarning("UnitManager: unitPrefab이 설정되지 않았습니다."); return; }
+        if (PoolManager.Instance == null || unitData == null || unitData.unitPrefab == null) return;
 
-        PoolManager.Instance.RegisterPool(unitPoolKey, unitPrefab, prewarmUnitCount, null);
+        // 이미 등록된 풀이면 스킵
+        if (unitPoolKeys.ContainsKey(unitData.unitName)) return;
+        
+        PoolManager.Instance.RegisterPool(unitData.unitName, unitData.unitPrefab, prewarmUnitCount, null);
+        unitPoolKeys[unitData.unitName] = unitData.unitName;
+        
+        Debug.Log($"UnitManager: {unitData.unitName} 풀 등록 완료 (Key: {unitData.unitName})");
     }
 
-    private Animal GetUnitFromPool()
-    {
-        Animal animal = null;
 
-        if (PoolManager.Instance != null) animal = PoolManager.Instance.Get<Animal>(unitPoolKey, unitSpawnZone);
+
+    /// <summary> 특정 유닛을 풀에서 가져옵니다. </summary>
+    private Animal GetUnitFromPool(UnitData unitData)
+    {
+        if (unitData == null || unitData.unitPrefab == null) return null;
         
-        if(animal == null) Debug.LogWarning("UnitManager: 유닛 풀에서 유닛을 꺼내오는데 실패했습니다.");
+        // 풀이 등록되지 않았으면 등록
+        if (!unitPoolKeys.ContainsKey(unitData.unitName)) RegisterUnitPool(unitData);
+    
+        Animal animal = null;
+        if (PoolManager.Instance != null) animal = PoolManager.Instance.Get<Animal>(unitData.unitName, unitSpawnParent);
+        
+        if(animal == null) Debug.LogWarning($"UnitManager: {unitData.unitName} 유닛 풀에서 유닛을 꺼내오는데 실패했습니다.");
 
         return animal;
     }
