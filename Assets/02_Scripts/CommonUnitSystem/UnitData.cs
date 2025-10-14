@@ -67,6 +67,8 @@ public class UnitData : ScriptableObject
     public Sprite unitSprite;
     public UnitTier tier;
 
+    public GameObject unitPrefab;
+
     
     [Header("스탯")]
     public int health = 100;
