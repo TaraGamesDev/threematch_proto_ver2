@@ -44,37 +44,8 @@ public class UnitManager : MonoBehaviour
     }
     
     #region Spawn Unit
-    public void SpawnUnitFromBlock(UnitBlock block)
-    {
-        if (block == null || block.unitData == null) return;
-        
-        // UnitData의 프리팹을 직접 사용
-        if (block.unitData.unitPrefab == null){ Debug.LogWarning($"UnitManager: {block.unitData.unitName}의 unitPrefab이 설정되지 않았습니다."); return; }
-        
-        Animal animal = GetUnitFromPool(block.unitData);
-        if (animal == null) return;
-
-        if(unitSpawnParent == null){ Debug.LogWarning("UnitManager: unitSpawnParent이 설정되지 않았습니다."); return; }
-        
-        Transform parent = unitSpawnParent;
-        animal.transform.SetParent(parent, false);
-        
-        // 플레이어 위치에서 스폰
-        if(GameManager.Instance.playerTransform == null){ Debug.LogWarning("UnitManager: GameManager.Instance.playerTransform이 설정되지 않았습니다."); return; }
-
-        animal.transform.position = GameManager.Instance.playerTransform.position;
-        animal.transform.rotation = Quaternion.identity;
-
-        animal.unitData = block.unitData;
-        animal.Init();
-        UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal);
-        animal.SetCanMove(WaveManager.Instance.IsWaveActive());
-
-        if (!activeUnits.Contains(animal)) activeUnits.Add(animal);
-    }
-    
-    /// <summary> UnitData로 직접 유닛을 소환합니다. (신화 유닛 소환용) </summary>
-    public void SpawnUnitFromUnitData(UnitData unitData)
+    /// <summary> UnitData로 유닛을 소환합니다. (일반 유닛 및 신화 유닛 공통) </summary>
+    public void SpawnUnitFromUnitData(UnitData unitData, bool isMythic = false)
     {
         if (unitData == null) return;
         
@@ -92,9 +63,11 @@ public class UnitManager : MonoBehaviour
         // 플레이어 위치에서 스폰
         if(GameManager.Instance.playerTransform == null){ Debug.LogWarning("UnitManager: GameManager.Instance.playerTransform이 설정되지 않았습니다."); return; }
 
-        animal.transform.position = GameManager.Instance.playerTransform.position;;
+        animal.transform.position = GameManager.Instance.playerTransform.position;
         animal.transform.rotation = Quaternion.identity;
-        animal.transform.localScale = Vector3.one * 2f;
+        
+        // 신화 유닛일 때만 스케일 2배
+        animal.transform.localScale = isMythic ? Vector3.one * 2f : Vector3.one;
 
         animal.unitData = unitData;
         animal.Init();
@@ -104,7 +77,6 @@ public class UnitManager : MonoBehaviour
         if (!activeUnits.Contains(animal)) activeUnits.Add(animal);
     }
 
-
     #endregion
 
     
@@ -112,14 +84,6 @@ public class UnitManager : MonoBehaviour
     {
         if (activeUnits.Contains(animal)) activeUnits.Remove(animal);
     }
-    
-    // @ TODO : 업그레이드 적용
-    // public void ApplyUpgradeToAllUnits(UpgradeData.UpgradeType upgradeType, float bonus, bool isPercentage)
-    // {
-    //     foreach (var animal in activeUnits) 
-    //         if (animal != null) animal.ApplyUpgrade(upgradeType, bonus, isPercentage);    
-        
-    // }
     
     // 웨이브 완료 시 모든 유닛을 스폰 포지션으로 되돌리기
     public void ResetUnitsToSpawnPosition()
