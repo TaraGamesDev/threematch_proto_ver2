@@ -111,6 +111,8 @@ MonoBehaviour:
   currentTarget: {fileID: 0}
   spriteRenderer: {fileID: 0}
   attackEffect: {fileID: 0}
+  detectionCollider: {fileID: 0}
+  rb: {fileID: 0}
   acornProjectilePrefab: {fileID: 0}
   bombProjectilePrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
@@ -187,5 +189,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 100, y: 100}
   m_EdgeRadius: 0

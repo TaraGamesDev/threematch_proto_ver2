@@ -212,12 +212,18 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     #region Show/Hide Upgrade Selection Panel
     private void ShowUpgradeSelectionPanel()
     {
-        if (LevelUpPanel != null) LevelUpPanel.SetActive(true);
+        if (LevelUpPanel != null) {
+            LevelUpPanel.SetActive(true);
+            Time.timeScale = 0f;
+        }
     }
 
     private void HideUpgradeSelectionPanel()
     {
-        if (LevelUpPanel != null) LevelUpPanel.SetActive(false);
+        if (LevelUpPanel != null) {
+            LevelUpPanel.SetActive(false);
+            Time.timeScale = 1f;
+        }
         OnUpgradePanelClosed?.Invoke();
     }
 
