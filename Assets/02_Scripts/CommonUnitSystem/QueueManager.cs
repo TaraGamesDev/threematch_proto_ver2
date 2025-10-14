@@ -176,7 +176,7 @@ public class QueueManager : MonoBehaviour
     {
         if (block == null || !blocks.Contains(block)) return;
 
-        UnitManager.Instance?.SpawnUnitFromBlock(block);
+        UnitManager.Instance?.SpawnUnitFromUnitData(block.unitData);
         RemoveBlock(block);
         
         // 레이아웃 재정렬 후 머지 확인
@@ -345,6 +345,8 @@ public class QueueManager : MonoBehaviour
         // 각 신화 레시피 확인
         foreach (MythicRecipe recipe in mythicRecipeConfig.ActiveRecipes)
         {
+            if(!recipe.isUnlocked) continue;
+            
             int window = recipe.Sequence.Count;
             if (window == 0 || recipe.ResultUnit == null) continue;
 
@@ -483,7 +485,7 @@ public class QueueManager : MonoBehaviour
         foreach (var block in blocksToRemove) if (blocks.Contains(block)) RemoveBlock(block);
 
         // 신화 유닛 소환
-        for (int i = 0; i < recipe.OutputCount; i++) UnitManager.Instance?.SpawnUnitFromUnitData(recipe.ResultUnit);
+        for (int i = 0; i < recipe.OutputCount; i++) UnitManager.Instance?.SpawnUnitFromUnitData(recipe.ResultUnit, true);
 
         // 레이아웃 재정렬 후 머지 확인
         RelayoutQueue(onComplete: () => TryResolveQueue());
