@@ -89,7 +89,9 @@ public class WaveManager : MonoBehaviour
     private int CalculateEnemyCount(int wave)
     {
         // 웨이브가 증가할수록 적 수 증가
-        return enemiesPerWave + (wave - 1) * 5;
+        // return enemiesPerWave + (wave - 1) * 5;
+        return enemiesPerWave;
+
     }
     
     private IEnumerator SpawnWave(int enemyCount)
