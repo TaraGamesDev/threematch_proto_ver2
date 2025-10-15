@@ -132,11 +132,215 @@ public sealed partial class MONEY : BGEntity
 }
 
 [Preserve]
+public sealed partial class Probability : BGEntity
+{
+	private static BansheeGz.BGDatabase.BGMetaRow _metaDefault;
+	public static BansheeGz.BGDatabase.BGMetaRow MetaDefault => _metaDefault ??= BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(5684731524531148409UL,5453736929890599856UL), () => _metaDefault = null);
+	public static BansheeGz.BGDatabase.BGRepoEvents Events => BGRepo.I.Events;
+	public static int CountEntities => MetaDefault.CountEntities;
+	public System.String name
+	{
+		get => _name[Index];
+		set => _name[Index] = value;
+	}
+	public System.Int32 LEVEL
+	{
+		get => _LEVEL[Index];
+		set => _LEVEL.SetValue(this, value);
+	}
+	public System.Single TIER1
+	{
+		get => _TIER1[Index];
+		set => _TIER1.SetValue(this, value);
+	}
+	public System.Single TIER2
+	{
+		get => _TIER2[Index];
+		set => _TIER2.SetValue(this, value);
+	}
+	public System.Single TIER3
+	{
+		get => _TIER3[Index];
+		set => _TIER3.SetValue(this, value);
+	}
+	public System.Single TIER4
+	{
+		get => _TIER4[Index];
+		set => _TIER4.SetValue(this, value);
+	}
+	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_name;
+	public static BansheeGz.BGDatabase.BGFieldEntityName _name => _ufle12jhs77_name ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(4843517377938010592UL, 13264182566218335370UL), () => _ufle12jhs77_name = null);
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_LEVEL;
+	public static BansheeGz.BGDatabase.BGFieldInt _LEVEL => _ufle12jhs77_LEVEL ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(4634751770864652504UL, 3359543931059859391UL), () => _ufle12jhs77_LEVEL = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER1;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER1 => _ufle12jhs77_TIER1 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(4673315291674339197UL, 11883964986103953819UL), () => _ufle12jhs77_TIER1 = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER2;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER2 => _ufle12jhs77_TIER2 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5689777288657360466UL, 650675087797524635UL), () => _ufle12jhs77_TIER2 = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER3;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER3 => _ufle12jhs77_TIER3 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5178750022247981196UL, 1908538582548578965UL), () => _ufle12jhs77_TIER3 = null);
+	private static BansheeGz.BGDatabase.BGFieldFloat _ufle12jhs77_TIER4;
+	public static BansheeGz.BGDatabase.BGFieldFloat _TIER4 => _ufle12jhs77_TIER4 ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(MetaDefault, new BGId(5648533473217217616UL, 4995864119426926254UL), () => _ufle12jhs77_TIER4 = null);
+	private Probability() : base(MetaDefault) {}
+	private Probability(BGId id) : base(MetaDefault, id) {}
+	private Probability(BGMetaEntity meta) : base(meta) {}
+	private Probability(BGMetaEntity meta, BGId id) : base(meta, id) {}
+	public static Probability FindEntity(Predicate<Probability> filter) => BGCodeGenUtils.FindEntity(MetaDefault, filter);
+	public static List<Probability> FindEntities(Predicate<Probability> filter, List<Probability> result=null, Comparison<Probability> sort=null) => BGCodeGenUtils.FindEntities(MetaDefault, filter, result, sort);
+	public static void ForEachEntity(Action<Probability> action, Predicate<Probability> filter=null, Comparison<Probability> sort=null) => BGCodeGenUtils.ForEachEntity(MetaDefault, action, filter, sort);
+	public static Probability GetEntity(BGId entityId) => (Probability) MetaDefault.GetEntity(entityId);
+	public static Probability GetEntity(int index) => (Probability) MetaDefault[index];
+	public static Probability GetEntity(string entityName) => (Probability) MetaDefault.GetEntity(entityName);
+	public static Probability NewEntity() => (Probability) MetaDefault.NewEntity();
+	public static Probability NewEntity(BGId entityId) => (Probability) MetaDefault.NewEntity(entityId);
+	public static Probability NewEntity(Action<Probability> callback) => (Probability) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((Probability)entity)));
+	public static void InitializeCodeGenRuntime()
+	{
+		_metaDefault = BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(5684731524531148409UL,5453736929890599856UL), ReleaseCodeGenRuntime);
+		_ufle12jhs77_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(_metaDefault, new BGId(4843517377938010592UL, 13264182566218335370UL));
+		_ufle12jhs77_LEVEL = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(_metaDefault, new BGId(4634751770864652504UL, 3359543931059859391UL));
+		_ufle12jhs77_TIER1 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(4673315291674339197UL, 11883964986103953819UL));
+		_ufle12jhs77_TIER2 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5689777288657360466UL, 650675087797524635UL));
+		_ufle12jhs77_TIER3 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5178750022247981196UL, 1908538582548578965UL));
+		_ufle12jhs77_TIER4 = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldFloat>(_metaDefault, new BGId(5648533473217217616UL, 4995864119426926254UL));
+	}
+	public static void ReleaseCodeGenRuntime()
+	{
+		_metaDefault = null;
+		_ufle12jhs77_name = null;
+		_ufle12jhs77_LEVEL = null;
+		_ufle12jhs77_TIER1 = null;
+		_ufle12jhs77_TIER2 = null;
+		_ufle12jhs77_TIER3 = null;
+		_ufle12jhs77_TIER4 = null;
+	}
+
+	[Preserve]
+	public sealed class Factory : BGEntity.EntityFactory
+	{
+		public BGEntity NewEntity(BGMetaEntity meta) => new Probability(meta);
+		public BGEntity NewEntity(BGMetaEntity meta, BGId id) => new Probability(meta, id);
+	}
+
+	public static class __Names
+	{
+		public const string Meta = "Probability";
+		public const string name = "name";
+		public const string LEVEL = "LEVEL";
+		public const string TIER1 = "TIER1";
+		public const string TIER2 = "TIER2";
+		public const string TIER3 = "TIER3";
+		public const string TIER4 = "TIER4";
+	}
+}
+
+[Preserve]
+public sealed partial class UpgradeAbility : BGEntity
+{
+	private static BansheeGz.BGDatabase.BGMetaRow _metaDefault;
+	public static BansheeGz.BGDatabase.BGMetaRow MetaDefault => _metaDefault ??= BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(4981527269916631862UL,5572655080704517509UL), () => _metaDefault = null);
+	public static BansheeGz.BGDatabase.BGRepoEvents Events => BGRepo.I.Events;
+	public static int CountEntities => MetaDefault.CountEntities;
+	public System.String name
+	{
+		get => _name[Index];
+		set => _name[Index] = value;
+	}
+	public System.Int32 ABILITY_ID
+	{
+		get => _ABILITY_ID[Index];
+		set => _ABILITY_ID.SetValue(this, value);
+	}
+	public System.String ABILITY_NAME
+	{
+		get => _ABILITY_NAME[Index];
+		set => _ABILITY_NAME[Index] = value;
+	}
+	public System.String DESCRIPTION
+	{
+		get => _DESCRIPTION[Index];
+		set => _DESCRIPTION[Index] = value;
+	}
+	public System.Int32 MAX_RANK
+	{
+		get => _MAX_RANK[Index];
+		set => _MAX_RANK.SetValue(this, value);
+	}
+	private static BansheeGz.BGDatabase.BGFieldEntityName _ufle12jhs77_name;
+	public static BansheeGz.BGDatabase.BGFieldEntityName _name => _ufle12jhs77_name ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(MetaDefault, new BGId(5604517367844950245UL, 5799269725645492653UL), () => _ufle12jhs77_name = null);
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_ABILITY_ID;
+	public static BansheeGz.BGDatabase.BGFieldInt _ABILITY_ID => _ufle12jhs77_ABILITY_ID ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5132743428556148199UL, 9143158430985605779UL), () => _ufle12jhs77_ABILITY_ID = null);
+	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_ABILITY_NAME;
+	public static BansheeGz.BGDatabase.BGFieldString _ABILITY_NAME => _ufle12jhs77_ABILITY_NAME ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldString>(MetaDefault, new BGId(5301067485773456565UL, 9313438382847457678UL), () => _ufle12jhs77_ABILITY_NAME = null);
+	private static BansheeGz.BGDatabase.BGFieldString _ufle12jhs77_DESCRIPTION;
+	public static BansheeGz.BGDatabase.BGFieldString _DESCRIPTION => _ufle12jhs77_DESCRIPTION ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldString>(MetaDefault, new BGId(5707410446859957749UL, 10946962929014996642UL), () => _ufle12jhs77_DESCRIPTION = null);
+	private static BansheeGz.BGDatabase.BGFieldInt _ufle12jhs77_MAX_RANK;
+	public static BansheeGz.BGDatabase.BGFieldInt _MAX_RANK => _ufle12jhs77_MAX_RANK ??= BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(MetaDefault, new BGId(5233448958865690097UL, 1006679501638521252UL), () => _ufle12jhs77_MAX_RANK = null);
+	private UpgradeAbility() : base(MetaDefault) {}
+	private UpgradeAbility(BGId id) : base(MetaDefault, id) {}
+	private UpgradeAbility(BGMetaEntity meta) : base(meta) {}
+	private UpgradeAbility(BGMetaEntity meta, BGId id) : base(meta, id) {}
+	public static UpgradeAbility FindEntity(Predicate<UpgradeAbility> filter) => BGCodeGenUtils.FindEntity(MetaDefault, filter);
+	public static List<UpgradeAbility> FindEntities(Predicate<UpgradeAbility> filter, List<UpgradeAbility> result=null, Comparison<UpgradeAbility> sort=null) => BGCodeGenUtils.FindEntities(MetaDefault, filter, result, sort);
+	public static void ForEachEntity(Action<UpgradeAbility> action, Predicate<UpgradeAbility> filter=null, Comparison<UpgradeAbility> sort=null) => BGCodeGenUtils.ForEachEntity(MetaDefault, action, filter, sort);
+	public static UpgradeAbility GetEntity(BGId entityId) => (UpgradeAbility) MetaDefault.GetEntity(entityId);
+	public static UpgradeAbility GetEntity(int index) => (UpgradeAbility) MetaDefault[index];
+	public static UpgradeAbility GetEntity(string entityName) => (UpgradeAbility) MetaDefault.GetEntity(entityName);
+	public static UpgradeAbility NewEntity() => (UpgradeAbility) MetaDefault.NewEntity();
+	public static UpgradeAbility NewEntity(BGId entityId) => (UpgradeAbility) MetaDefault.NewEntity(entityId);
+	public static UpgradeAbility NewEntity(Action<UpgradeAbility> callback) => (UpgradeAbility) MetaDefault.NewEntity(new BGMetaEntity.NewEntityContext(entity => callback((UpgradeAbility)entity)));
+	public static void InitializeCodeGenRuntime()
+	{
+		_metaDefault = BGCodeGenUtils.GetMeta<BansheeGz.BGDatabase.BGMetaRow>(new BGId(4981527269916631862UL,5572655080704517509UL), ReleaseCodeGenRuntime);
+		_ufle12jhs77_name = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldEntityName>(_metaDefault, new BGId(5604517367844950245UL, 5799269725645492653UL));
+		_ufle12jhs77_ABILITY_ID = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(_metaDefault, new BGId(5132743428556148199UL, 9143158430985605779UL));
+		_ufle12jhs77_ABILITY_NAME = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldString>(_metaDefault, new BGId(5301067485773456565UL, 9313438382847457678UL));
+		_ufle12jhs77_DESCRIPTION = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldString>(_metaDefault, new BGId(5707410446859957749UL, 10946962929014996642UL));
+		_ufle12jhs77_MAX_RANK = BGCodeGenUtils.GetField<BansheeGz.BGDatabase.BGFieldInt>(_metaDefault, new BGId(5233448958865690097UL, 1006679501638521252UL));
+	}
+	public static void ReleaseCodeGenRuntime()
+	{
+		_metaDefault = null;
+		_ufle12jhs77_name = null;
+		_ufle12jhs77_ABILITY_ID = null;
+		_ufle12jhs77_ABILITY_NAME = null;
+		_ufle12jhs77_DESCRIPTION = null;
+		_ufle12jhs77_MAX_RANK = null;
+	}
+
+	[Preserve]
+	public sealed class Factory : BGEntity.EntityFactory
+	{
+		public BGEntity NewEntity(BGMetaEntity meta) => new UpgradeAbility(meta);
+		public BGEntity NewEntity(BGMetaEntity meta, BGId id) => new UpgradeAbility(meta, id);
+	}
+
+	public static class __Names
+	{
+		public const string Meta = "UpgradeAbility";
+		public const string name = "name";
+		public const string ABILITY_ID = "ABILITY_ID";
+		public const string ABILITY_NAME = "ABILITY_NAME";
+		public const string DESCRIPTION = "DESCRIPTION";
+		public const string MAX_RANK = "MAX_RANK";
+	}
+}
+
+[Preserve]
 public static class BGCodeGenRuntimeInitializer
 {
 	[Preserve]
-	public static void InitializeCodeGenRuntime() => MONEY.InitializeCodeGenRuntime();
+	public static void InitializeCodeGenRuntime()
+	{
+		MONEY.InitializeCodeGenRuntime();
+		Probability.InitializeCodeGenRuntime();
+		UpgradeAbility.InitializeCodeGenRuntime();
+	}
 	[Preserve]
-	public static void ReleaseCodeGenRuntime() => MONEY.ReleaseCodeGenRuntime();
+	public static void ReleaseCodeGenRuntime()
+	{
+		MONEY.ReleaseCodeGenRuntime();
+		Probability.ReleaseCodeGenRuntime();
+		UpgradeAbility.ReleaseCodeGenRuntime();
+	}
 }
 #pragma warning restore 414

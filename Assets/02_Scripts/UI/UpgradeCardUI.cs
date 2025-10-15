@@ -60,12 +60,6 @@ public class UpgradeCardUI : MonoBehaviour
         // 랭크 정보 설정
         if (rankText != null) rankText.text = $"Rank {currentChoice.currentRank} → {currentChoice.nextRank}";
 
-        // 아이콘 설정 (나중에 구현)
-        if (iconImage != null && !string.IsNullOrEmpty(ability.ICON_PATH))
-        {
-            // TODO: 아이콘 로드 로직 구현
-        }
-
         // 새로운 업그레이드인지 확인
         if (newUpgradeIndicator != null) newUpgradeIndicator.SetActive(currentChoice.currentRank == 0);
     }
