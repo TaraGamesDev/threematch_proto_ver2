@@ -69,6 +69,7 @@ public class Enemy : Unit
             float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
             if (distanceToPlayer <= currentAttackRange)
             {
+                StopMovement(); // 공격 중에는 정지
                 AttackPlayer();
                 return; // 공격 중에는 이동하지 않음
             }
@@ -80,6 +81,7 @@ public class Enemy : Unit
             float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
             if (distanceToTarget <= currentAttackRange)
             {
+                StopMovement(); // 공격 중에는 정지
                 Attack();
                 return; // 공격 중에는 이동하지 않음
             }
@@ -91,37 +93,20 @@ public class Enemy : Unit
 
     private void MoveTowardsNearestTarget()
     {
-        Vector3 movement = Vector3.zero;
+        if (rb == null){Debug.LogError("Enemy: rb is null"); return;}
         
-        // 기본 전진 방향 (아래쪽)
-        movement += Vector3.down * currentMoveSpeed * Time.deltaTime * 10f;
+        Vector2 targetPosition = Vector2.zero;
         
-        // 타겟이 있으면 타겟을 향해 좌우로도 이동
-        if (currentTarget != null)
-        {
-            float horizontalDistance = currentTarget.transform.position.x - transform.position.x;
-            
-            // 타겟이 왼쪽에 있으면 왼쪽으로, 오른쪽에 있으면 오른쪽으로 이동
-            if (Mathf.Abs(horizontalDistance) > 0.5f) // 최소 거리 이상일 때만 좌우 이동
-            {
-                float horizontalMovement = Mathf.Sign(horizontalDistance) * currentMoveSpeed * Time.deltaTime * 5f; // 좌우 이동 속도는 전진 속도의 절반
-                movement += Vector3.right * horizontalMovement;
-            }
-        }
-        else if (targetPlayer != null)
-        {
-            // currentTarget이 null이면 플레이어를 향해 좌우로 이동
-            float horizontalDistance = targetPlayer.position.x - transform.position.x;
-            
-            // 플레이어가 왼쪽에 있으면 왼쪽으로, 오른쪽에 있으면 오른쪽으로 이동
-            if (Mathf.Abs(horizontalDistance) > 0.5f) // 최소 거리 이상일 때만 좌우 이동
-            {
-                float horizontalMovement = Mathf.Sign(horizontalDistance) * currentMoveSpeed * Time.deltaTime * 5f; // 좌우 이동 속도는 전진 속도의 절반
-                movement += Vector3.right * horizontalMovement;
-            }
-        }
+        // Animal 타겟이 있으면 Animal을 향해 이동
+        if (currentTarget != null) targetPosition = currentTarget.transform.position;
         
-        transform.position += movement;
+        // Animal 타겟이 없고 플레이어가 있으면 플레이어를 향해 이동
+        else if (targetPlayer != null) targetPosition = targetPlayer.position;
+
+        // 타겟을 향한 방향 벡터 계산
+        Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
+        
+        rb.linearVelocity = direction * currentMoveSpeed;
     }
     
     #endregion

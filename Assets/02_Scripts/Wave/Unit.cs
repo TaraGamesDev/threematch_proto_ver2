@@ -25,32 +25,26 @@ public class Unit : MonoBehaviour
 
 
     [Header("상태")]
-    public bool canMove = true; // 움직임 제어
-    
-    private float originalMoveSpeed;
+    [SerializeField] protected bool canMove = true; // 움직임 제어
+
+    [SerializeField] protected bool isDead = false;
     
     
     [Header("전투")]
-    public float lastAttackTime;
-    public bool isAttacking = false;
+    protected float lastAttackTime;
+    [SerializeField] protected bool isAttacking = false;
     public Unit currentTarget; // 현재 타겟
 
+
     
-    [Header("타겟 검색")]
+    
+    // private or protected
+    protected Rigidbody2D rb;
     private float lastTargetSearchTime; // 마지막 타겟 검색 시간
-
-    
-    [Header("시각적 요소")]
-    public SpriteRenderer spriteRenderer;
-
-    
-    [Header("애니메이션")]
-    public float attackAnimationDuration = 0.3f;
-    public float damageFlashDuration = 0.1f;
-    
-    protected Vector3 originalScale;
-    protected Color originalColor;
-    protected bool isDead = false;
+    private SpriteRenderer spriteRenderer;
+    private float damageFlashDuration = 0.1f;
+    private Vector3 originalScale;
+    private Color originalColor;
     
     protected virtual void Awake()
     {
@@ -58,6 +52,7 @@ public class Unit : MonoBehaviour
         
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
+        if (rb == null) rb = GetComponent<Rigidbody2D>();
     }
 
     protected virtual void OnEnable()
@@ -229,5 +224,12 @@ public class Unit : MonoBehaviour
     public void SetCanMove(bool canMove)
     {
         this.canMove = canMove;
+        if (!canMove) StopMovement();
+    }
+    
+    /// <summary> 유닛을 정지시킵니다. </summary>
+    protected void StopMovement()
+    {
+        if (rb != null)rb.linearVelocity = Vector2.zero;
     }
 }

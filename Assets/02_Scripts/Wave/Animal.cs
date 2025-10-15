@@ -10,7 +10,10 @@ public class Animal : Unit
     #region Update Target
     protected override void UpdateTarget()
     {
+        // 1순위: 가장 가까운 적을 찾아서 타겟으로 설정
         currentTarget = FindNearestEnemy(); // 가장 가까운 적을 찾아서 타겟으로 설정
+        
+        // 2순위: 적이 없으면 적 기지를 타겟으로 설정 -> null일때 적 기지를 공격하도록 따로 처리 
     }
 
     /// <summary> 가장 가까운 적을 찾습니다. </summary>
@@ -48,48 +51,64 @@ public class Animal : Unit
     {
         if (!canMove && !WaveManager.Instance.IsWaveActive()) return; // 움직임이 제한된 경우 정지
         
-        Transform stopPos = UnitManager.Instance.unitStopPos;
-        if (stopPos == null) return;
-        
-        // UnitStopPos에 도착했는지 확인 (위쪽으로 이동)
-        if (transform.position.y >= stopPos.position.y) return; // 이미 도착한 경우 더 이상 이동하지 않음
-        
-        // 타겟이 있고 사거리 안에 있으면 공격
-        if (currentTarget != null)
+        // Enemy 타겟이 있고 사거리 안에 있으면 공격
+        if (currentTarget != null && !currentTarget.IsDead())
         {
             float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
             if (distanceToTarget <= currentAttackRange)
             {
+                StopMovement(); // 공격 중에는 정지
                 Attack();
                 return; // 공격 중에는 이동하지 않음
             }
         }
         
-        // 가장 가까운 적을 향해 이동
-        MoveTowardsNearestEnemy();
-    }
-    
-    private void MoveTowardsNearestEnemy()
-    {
-        Vector3 movement = Vector3.zero;
-        
-        // 기본 전진 방향 (위쪽)
-        movement += Vector3.up * currentMoveSpeed * Time.deltaTime * 10f;
-        
-        // 가장 가까운 적이 있으면 좌우로도 이동
-        if (currentTarget != null)
+        // 적 기지 타겟이 있고 사거리 안에 있으면 공격
+        if (WaveManager.Instance.EnemyBaseTransform != null)
         {
-            float horizontalDistance = currentTarget.transform.position.x - transform.position.x;
-            
-            // 적이 왼쪽에 있으면 왼쪽으로, 오른쪽에 있으면 오른쪽으로 이동
-            if (Mathf.Abs(horizontalDistance) > 0.5f) // 최소 거리 이상일 때만 좌우 이동
+            float distanceToBase = Vector3.Distance(transform.position, WaveManager.Instance.EnemyBaseTransform.position);
+            if (distanceToBase <= currentAttackRange)
             {
-                float horizontalMovement = Mathf.Sign(horizontalDistance) * currentMoveSpeed * Time.deltaTime * 5f; // 좌우 이동 속도는 전진 속도의 절반
-                movement += Vector3.right * horizontalMovement;
+                StopMovement(); // 공격 중에는 정지
+                AttackEnemyBase();
+                return; // 공격 중에는 이동하지 않음
             }
         }
         
-        transform.position += movement;
+        // 타겟을 향해 이동
+        MoveTowardsTarget();
+    }
+    
+    private void MoveTowardsTarget()
+    {
+        if (rb == null) {Debug.LogError("Animal: rb is null"); return;}
+        
+        Vector2 targetPosition = Vector2.zero;
+        
+        // Enemy 타겟이 있으면 Enemy를 향해 이동
+        if (currentTarget != null && !currentTarget.IsDead()) targetPosition = currentTarget.transform.position;
+        else currentTarget = FindNearestEnemy(); // 타겟이 없으면 타겟 탐색 
+        
+        // Enemy 타겟이 없고 적 기지가 있으면 적 기지를 향해 이동
+        if (currentTarget == null && WaveManager.Instance?.EnemyBaseTransform != null) targetPosition = WaveManager.Instance.EnemyBaseTransform.position;
+        
+        // 타겟을 향한 방향 벡터 계산
+        Vector2 direction = (targetPosition - (Vector2)transform.position).normalized;
+        rb.linearVelocity = direction * currentMoveSpeed;
+    }
+    
+    /// <summary> 적 기지 공격 </summary>
+    private void AttackEnemyBase()
+    {
+        if (Time.time - lastAttackTime < 1f / currentAttackSpeed) return;
+        
+        lastAttackTime = Time.time;
+        
+        // 공격 애니메이션 실행
+        AttackAnimation();
+        
+        // 적 기지에 데미지 입히기
+        if (WaveManager.Instance != null) WaveManager.Instance.DamageEnemyBase(currentAttackDamage);
     }
     
     #endregion
@@ -113,44 +132,4 @@ public class Animal : Unit
         
         UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(this);
     }
-    
-    //@ TODO : 업그레이드 적용
-    // 업그레이드 적용
-    // public void ApplyUpgrade(UpgradeData.UpgradeType upgradeType, float bonus, bool isPercentage)
-    // {
-    //     switch (upgradeType)
-    //     {
-    //         case UpgradeData.UpgradeType.UnitAttack:
-    //             if (isPercentage) currentAttackDamage = Mathf.RoundToInt(currentAttackDamage * (1f + bonus / 100f));
-    //             else currentAttackDamage += Mathf.RoundToInt(bonus);
-    //             break;
-                
-    //         case UpgradeData.UpgradeType.UnitHealth:
-    //             if (isPercentage)
-    //             {
-    //                 int healthIncrease = Mathf.RoundToInt(currentHealth * (bonus / 100f));
-    //                 currentHealth += healthIncrease;
-    //             }
-    //             else
-    //             {
-    //                 currentHealth += Mathf.RoundToInt(bonus);
-    //             }
-    //             break;
-                
-    //         case UpgradeData.UpgradeType.UnitAttackSpeed:
-    //             if (isPercentage) currentAttackSpeed *= (1f + bonus / 100f);
-    //             else currentAttackSpeed += bonus;
-    //             break;
-                
-    //         case UpgradeData.UpgradeType.UnitMoveSpeed:
-    //             if (isPercentage) currentMoveSpeed *= (1f + bonus / 100f);
-    //             else currentMoveSpeed += bonus;
-    //             break;
-                
-    //         case UpgradeData.UpgradeType.UnitRange:
-    //             if (isPercentage) currentAttackRange *= (1f + bonus / 100f);
-    //             else currentAttackRange += bonus;
-    //             break;
-    //     }
-    // }
 }
