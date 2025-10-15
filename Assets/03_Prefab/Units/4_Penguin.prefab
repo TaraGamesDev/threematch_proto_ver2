@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6896788649862731311}
   - component: {fileID: -4671853673882777413}
   - component: {fileID: 6767658846304010292}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: 4_Penguin
   m_TagString: Untagged
   m_Icon: {fileID: 0}

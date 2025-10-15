@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6896788649862731311}
   - component: {fileID: -2891346841878592040}
   - component: {fileID: 3206019779593604784}
-  m_Layer: 5
+  m_Layer: 3
   m_Name: 4_Dragon
   m_TagString: Untagged
   m_Icon: {fileID: 0}

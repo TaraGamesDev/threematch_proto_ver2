@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6896788649862731311}
   - component: {fileID: -1195903555672452979}
   - component: {fileID: 8168756610391490651}
-  m_Layer: 5
+  m_Layer: 6
   m_Name: 2_Kangaroo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
