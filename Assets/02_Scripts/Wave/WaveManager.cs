@@ -22,6 +22,8 @@ public class WaveManager : MonoBehaviour
     
     [Title("스폰 존 설정")]
     public RectTransform monsterSpawnZone;
+    [Tooltip("스폰 위치의 좌우 랜덤 범위")]
+    public float spawnRandomRange = 2f;
 
 
     [Tooltip("신화 적으로 스폰될 유닛 데이터")]
@@ -145,7 +147,10 @@ public class WaveManager : MonoBehaviour
 
         if (monsterSpawnZone == null) { Debug.LogWarning("WaveManager: monsterSpawnZone이 설정되지 않았습니다."); return; }
 
-        enemy.transform.position = monsterSpawnZone.position;
+        // 스폰 위치에 랜덤성 추가
+        Vector3 spawnPosition = monsterSpawnZone.position;
+        spawnPosition.x += Random.Range(-spawnRandomRange, spawnRandomRange);
+        enemy.transform.position = spawnPosition;
         enemy.transform.rotation = Quaternion.identity;
 
         // UnitData로 기본 스탯 설정
@@ -187,7 +192,10 @@ public class WaveManager : MonoBehaviour
         Enemy mythicEnemy = GetEnemyFromPool();
         if (mythicEnemy == null) yield break;
 
-        mythicEnemy.transform.position = monsterSpawnZone.position;
+        // 신화 적 스폰 위치에도 랜덤성 추가
+        Vector3 mythicSpawnPosition = monsterSpawnZone.position;
+        mythicSpawnPosition.x += Random.Range(-spawnRandomRange, spawnRandomRange);
+        mythicEnemy.transform.position = mythicSpawnPosition;
         mythicEnemy.transform.rotation = Quaternion.identity;
 
         // 크기 2배로 설정 (보스 느낌)

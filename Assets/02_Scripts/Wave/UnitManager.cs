@@ -20,6 +20,8 @@ public class UnitManager : MonoBehaviour
     [Tooltip("유닛이 스폰될 UI 패널 (UnitBlock의 x좌표에 맞춰 스폰)")]
     public RectTransform unitSpawnParent;
     public Transform unitStopPos; // 유닛들이 멈출 위치
+    [Tooltip("유닛 스폰 위치의 좌우 랜덤 범위")]
+    public float unitSpawnRandomRange = 5f;
 
     [Tooltip("타겟 검색 간격")]
     public float TargetSearchInterval = 0.5f;
@@ -60,10 +62,12 @@ public class UnitManager : MonoBehaviour
         Transform parent = unitSpawnParent;
         animal.transform.SetParent(parent, false);
         
-        // 플레이어 위치에서 스폰
+        // 플레이어 위치에서 스폰 (랜덤성 추가)
         if(GameManager.Instance.playerTransform == null){ Debug.LogWarning("UnitManager: GameManager.Instance.playerTransform이 설정되지 않았습니다."); return; }
 
-        animal.transform.position = GameManager.Instance.playerTransform.position;
+        Vector3 spawnPosition = GameManager.Instance.playerTransform.position;
+        spawnPosition.x += Random.Range(-unitSpawnRandomRange, unitSpawnRandomRange);
+        animal.transform.position = spawnPosition;
         animal.transform.rotation = Quaternion.identity;
         
         // 신화 유닛일 때만 스케일 2배
