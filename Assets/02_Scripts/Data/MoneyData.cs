@@ -12,18 +12,6 @@ public class MoneyDataList
     {
         waveMoneyDatas = new List<WaveMoneyData>();
         moneyBaseData = new MoneyBaseData();
-
-        int count = MONEY.CountEntities;
-
-        for (int i = 0; i < count; i++)
-        {
-            waveMoneyDatas.Add(new WaveMoneyData(MONEY.GetEntity(i).ENEMY_GOLD, MONEY.GetEntity(i).WAVE_MIN, MONEY.GetEntity(i).WAVE_MAX));
-        }
-
-        moneyBaseData.INITIAL_MONEY = MONEY.GetEntity(0).INITIAL_MONEY;
-        moneyBaseData.SPAWN_INITIAL = MONEY.GetEntity(0).SPAWN_INITIAL;
-        moneyBaseData.SPAWN_ADDED = MONEY.GetEntity(0).SPAWN_ADDED;
-        moneyBaseData.UPGRADE = MONEY.GetEntity(0).UPGRADE;
     }
 }
 

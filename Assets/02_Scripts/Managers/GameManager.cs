@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
 
     public void InitializeMoneyDataList(){
         // MoneyData에서 초기 골드 설정
-        moneyDataList = new MoneyDataList();
+        moneyDataList = DataManager.Instance.moneyDataList;
         currentGold = Mathf.Max(0, moneyDataList.moneyBaseData.INITIAL_MONEY);
         currentSpawnCost = moneyDataList.moneyBaseData.SPAWN_INITIAL;
         currentSpawnCostText.text = $"{currentSpawnCost} G"; // 텍스트 업데이트

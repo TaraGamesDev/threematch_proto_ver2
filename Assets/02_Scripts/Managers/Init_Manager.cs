@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class Init_Manager : MonoBehaviour
 {
@@ -13,7 +14,15 @@ public class Init_Manager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-                
+        StartAsync();
+    }
+    
+    private async void StartAsync()
+    {
+        await Task.Delay(1000);
+
+        DataManager.Instance.Init();
+        
         UnitDatabase.Initialize(); // 유닛 데이터 확인 
         QueueManager.Instance.RegisterBlockPool(); // 풀에 등록 
         QueueManager.Instance.RecalculateSlots(); // 슬롯 위치 계산 

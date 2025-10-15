@@ -349,6 +349,7 @@ RectTransform:
   - {fileID: 1113093371}
   - {fileID: 1587139525}
   - {fileID: 43883238}
+  - {fileID: 1572045791}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3439,6 +3440,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1550027771}
   m_CullTransparentMesh: 1
+--- !u!1 &1572045790
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1572045791}
+  - component: {fileID: 1572045792}
+  m_Layer: 0
+  m_Name: DataManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1572045791
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572045790}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 148411404}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1572045792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572045790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dc83cb9931b54aed979a5ec69d24735, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DataManager
+  moneyDataList:
+    waveMoneyDatas: []
+    moneyBaseData:
+      INITIAL_MONEY: 0
+      SPAWN_INITIAL: 0
+      SPAWN_ADDED: 0
+      UPGRADE: 0
 --- !u!1 &1587139524
 GameObject:
   m_ObjectHideFlags: 0
@@ -3543,6 +3599,7 @@ MonoBehaviour:
   expToNextLevel: 5
   expGrowthPerLevel: 5
   currentSpawnCost: 10
+  currentSpawnCostText: {fileID: 130134964}
   ProbabilityUpgradeCost: 100
   maxHealth: 100
   currentHealth: 10
@@ -4310,7 +4367,6 @@ MonoBehaviour:
   enemiesPerWave: 10
   WarningImage: {fileID: 1047751099}
   monsterSpawnZone: {fileID: 366558457}
-  spawnRandomRange: 2
   config: {fileID: 11400000, guid: dbbee9949fe414c74a1595b10ce7aad0, type: 2}
   mythicEnemyWaves: 
   healthMultiplier: 1.2
