@@ -132,6 +132,9 @@ public class Unit : MonoBehaviour
     
     protected void AttackAnimation()
     {
+        // ResetVisual();
+        // transform.DOKill();
+
         isAttacking = true;
         
         Vector3 originalScale = transform.localScale;
@@ -174,7 +177,8 @@ public class Unit : MonoBehaviour
     
     protected void DamageFlash()
     {
-        transform.DOKill();
+        // ResetVisual();
+        // transform.DOKill();
 
         // SpriteRenderer가 있는 경우
         if (spriteRenderer != null)
@@ -188,7 +192,7 @@ public class Unit : MonoBehaviour
         // UI Image가 있는 경우
         else
         {
-            UnityEngine.UI.Image image = GetComponent<UnityEngine.UI.Image>();
+            Image image = GetComponent<Image>();
             if (image != null)
             {
                 Color originalImageColor = image.color;
@@ -208,9 +212,10 @@ public class Unit : MonoBehaviour
         isDead = true;
         canMove = false;
         currentTarget = null;
-        transform.DOKill();
+        isAttacking = false;
 
-        if (spriteRenderer != null) spriteRenderer.color = originalColor;
+        transform.DOKill();
+        ResetVisual();
 
         PoolManager.Instance.Release(gameObject);
     }
@@ -231,5 +236,17 @@ public class Unit : MonoBehaviour
     protected void StopMovement()
     {
         if (rb != null)rb.linearVelocity = Vector2.zero;
+    }
+
+    protected virtual void ResetVisual()
+    {
+        // 스프라이트 기반인 경우
+        if (spriteRenderer != null) spriteRenderer.color = originalColor;
+
+        // 이미지 기반인 경우 
+        Image image = GetComponent<Image>();
+        if (image != null) image.color = originalColor;
+
+        transform.localScale = originalScale;
     }
 }

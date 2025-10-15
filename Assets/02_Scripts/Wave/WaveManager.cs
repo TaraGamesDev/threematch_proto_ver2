@@ -22,8 +22,7 @@ public class WaveManager : MonoBehaviour
     
     [Title("스폰 존 설정")]
     public RectTransform monsterSpawnZone;
-    [Tooltip("스폰 위치의 좌우 랜덤 범위")]
-    public float spawnRandomRange = 2f;
+    private float spawnRandomRange = 20f;
 
 
     [Tooltip("신화 적으로 스폰될 유닛 데이터")]
@@ -44,13 +43,14 @@ public class WaveManager : MonoBehaviour
 
 
     [Title("웨이브 진행상황")]
-    [SerializeField] private List<Enemy> activeEnemies = new List<Enemy>();
-    [SerializeField] private int currentWave = 1;
-    [SerializeField] private bool isWaveActive = false;
-    [SerializeField] private int currentWaveEnemyCount = 0;
-    [SerializeField] private int enemiesSpawned = 0;
-    [SerializeField] private int enemiesKilled = 0;
-    [SerializeField] private bool isBaseDestroyed = false;
+    [SerializeField, ReadOnly] private List<Enemy> activeEnemies = new List<Enemy>();
+    [SerializeField, ReadOnly] private int currentWave = 1;
+    [SerializeField, ReadOnly] private bool isWaveActive = false;
+    [SerializeField, ReadOnly] private int currentWaveEnemyCount = 0;
+    [SerializeField, ReadOnly] private int enemiesSpawned = 0;
+    [SerializeField, ReadOnly] private int enemiesKilled = 0;
+    [SerializeField, ReadOnly] private bool isBaseDestroyed = false;
+    [SerializeField, ReadOnly] private int currentWaveGoldReward = 1; // 현재 웨이브의 골드 보상
     
     
     [Title("Enemy Base Health")]
@@ -62,6 +62,7 @@ public class WaveManager : MonoBehaviour
     public int BaseCurrentHealth => baseCurrentHealth;
     public int BaseMaxHealth => baseMaxHealth;
     public Transform EnemyBaseTransform => enemyBaseTransform;
+    public int CurrentWaveGoldReward => currentWaveGoldReward;
     
     
     private void Awake()
@@ -88,6 +89,10 @@ public class WaveManager : MonoBehaviour
         enemiesSpawned = 0;
         enemiesKilled = 0;
         isBaseDestroyed = false;
+        
+        // 웨이브별 골드 보상 미리 계산
+        currentWaveGoldReward = GameManager.Instance.GetEnemyGoldReward(waveNumber);
+        Debug.Log($"[WaveManager] Wave {waveNumber} gold reward: {currentWaveGoldReward}");
         
         // 웨이브 변경 이벤트 발생
         OnWaveChanged?.Invoke(currentWave);
@@ -361,8 +366,11 @@ public class WaveManager : MonoBehaviour
     private int CalculateWaveReward()
     {
         // 현재 웨이브 * 뽑기에 필요한 돈
-        int drawCost = GameManager.Instance.goldCostPerBlock;
-        return currentWave/drawCost + drawCost*5;
+        // int drawCost = GameManager.Instance.goldCostPerBlock;
+        // return currentWave/drawCost + drawCost*5;
+
+        // 지금은 웨이브 클리어 골드 보상 없음 
+        return 0;
     }
 
     /// <summary> 현재 웨이브에서 해금되는 신화 유닛을 확인하고 해금합니다. </summary>
@@ -402,19 +410,21 @@ public class WaveManager : MonoBehaviour
     }
 
     /// <summary> 웨이브 클리어 메시지를 즉시 표시합니다. </summary>
-    private void ShowWaveCompleteMessage(int waveReward)
+    private void ShowWaveCompleteMessage(int waveReward = 0)
     {
-        UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어! \n 보상 : {waveReward} 골드");
+        if(waveReward > 0) UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어! \n 보상 : {waveReward} 골드");
+        else UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어!");
     }
 
     /// <summary> 신화 해금 메시지 후 지연하여 웨이브 클리어 메시지를 표시합니다. </summary>
-    private IEnumerator ShowWaveCompleteMessageDelayed(int waveReward)
+    private IEnumerator ShowWaveCompleteMessageDelayed(int waveReward = 0)
     {
         // 신화 해금 메시지가 표시되는 시간(3초) + 여유시간(0.5초) 대기
         yield return new WaitForSeconds(3.5f);
         
         // 웨이브 클리어 메시지 표시
-        UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어! \n 보상 : {waveReward} 골드");
+        if(waveReward > 0) UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어! \n 보상 : {waveReward} 골드");
+        else UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어!");
     }
 
     /// <summary> QueueManager의 mythicRecipeConfig를 순회하여 mythicEnemyWaves를 자동으로 채웁니다. </summary>

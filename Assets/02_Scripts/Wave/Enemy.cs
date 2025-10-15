@@ -5,9 +5,6 @@ using DG.Tweening;
 
 public class Enemy : Unit
 {
-    [Header("보상")]
-    public int goldReward = 1;
-    
     [Header("전투")]
     private Transform targetPlayer; // 플레이어 타겟
     
@@ -62,8 +59,22 @@ public class Enemy : Unit
     protected override void UpdateMovement()
     {
         if (!canMove) return; // 움직임이 제한된 경우 정지
+
+        // 유닛 타겟이 있고 사거리 안에 있으면 공격
+        if (currentTarget != null && !currentTarget.IsDead())
+        {
+            float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
+            if (distanceToTarget <= currentAttackRange)
+            {
+                StopMovement(); // 공격 중에는 정지
+                Attack();
+                return; // 공격 중에는 이동하지 않음
+            }
+        }
+
+        currentTarget = FindNearestAnimal(); // 타겟이 없으면 한번 찾고
         
-        // 공격할 동물이 없고 플레이어가 사거리 안에 있으면 플레이어 공격
+        // 그래도 공격할 동물이 없고 플레이어가 사거리 안에 있으면 플레이어 공격
         if (currentTarget == null && targetPlayer != null)
         {
             float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
@@ -71,18 +82,6 @@ public class Enemy : Unit
             {
                 StopMovement(); // 공격 중에는 정지
                 AttackPlayer();
-                return; // 공격 중에는 이동하지 않음
-            }
-        }
-        
-        // 유닛 타겟이 있고 사거리 안에 있으면 공격
-        if (currentTarget != null)
-        {
-            float distanceToTarget = Vector3.Distance(transform.position, currentTarget.transform.position);
-            if (distanceToTarget <= currentAttackRange)
-            {
-                StopMovement(); // 공격 중에는 정지
-                Attack();
                 return; // 공격 중에는 이동하지 않음
             }
         }
@@ -135,12 +134,10 @@ public class Enemy : Unit
     
     protected override void Die()
     {
-        if (isDead) return;
+        base.Die();
 
-        // Debug.Log($"[Enemy] {unitName} Die");
-
-        // 골드 & 경험치 획득
-        GameManager.Instance.AddGold(goldReward);
+        // 미리 설정된 골드 보상 사용
+        GameManager.Instance.AddGold(WaveManager.Instance.CurrentWaveGoldReward);
         GameManager.Instance.AddExp(); // 몬스터 1마리당 1 경험치
 
         // UI 업데이트
@@ -148,8 +145,6 @@ public class Enemy : Unit
         UIManager.Instance.UpdateExpTextUI();
 
         if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(this);
-
-        base.Die();
     }
 
 }

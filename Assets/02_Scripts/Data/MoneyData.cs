@@ -5,19 +5,19 @@ using System.Collections.Generic;
 [Serializable]
 public class MoneyDataList
 {
-    public List<MoneyData> moneyDatas;
+    public List<WaveMoneyData> waveMoneyDatas;
     public MoneyBaseData moneyBaseData;
 
     public MoneyDataList()
     {
-        moneyDatas = new List<MoneyData>();
+        waveMoneyDatas = new List<WaveMoneyData>();
         moneyBaseData = new MoneyBaseData();
 
         int count = MONEY.CountEntities;
 
         for (int i = 0; i < count; i++)
         {
-            moneyDatas.Add(new MoneyData(MONEY.GetEntity(i).ENEMY_GOLD, MONEY.GetEntity(i).WAVE_MIN, MONEY.GetEntity(i).WAVE_MAX));
+            waveMoneyDatas.Add(new WaveMoneyData(MONEY.GetEntity(i).ENEMY_GOLD, MONEY.GetEntity(i).WAVE_MIN, MONEY.GetEntity(i).WAVE_MAX));
         }
 
         moneyBaseData.INITIAL_MONEY = MONEY.GetEntity(0).INITIAL_MONEY;
@@ -28,13 +28,13 @@ public class MoneyDataList
 }
 
 [Serializable]
-public class MoneyData
+public class WaveMoneyData
 {
     public int enemyGold;
     public int waveMin;
     public int waveMax;
 
-    public MoneyData(int enemyGold, int waveMin, int waveMax)
+    public WaveMoneyData(int enemyGold, int waveMin, int waveMax)
     {
         this.enemyGold = enemyGold;
         this.waveMin = waveMin;

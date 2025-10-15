@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using System;
+using TMPro;
 
 /// <summary>
 /// Central coordinator for runtime game state. Handles player stats, wave scheduling,
@@ -12,12 +13,18 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     [Title("Player Economy & Progression")]
-    [SerializeField] private int startingGold = 20;
-    public int goldCostPerBlock = 5;
+    [SerializeField] private MoneyDataList moneyDataList;
     [SerializeField] private int playerLevel = 1;
     [SerializeField] private int currentExp = 0;
     [SerializeField] private int expToNextLevel = 5;
     [SerializeField] private int expGrowthPerLevel = 5;
+    
+    
+    [Title("Cost")]
+    [SerializeField, ReadOnly] private int currentSpawnCost = 10; // 현재 블럭 스폰 비용
+    [SerializeField] TMP_Text currentSpawnCostText;
+    [SerializeField, ReadOnly] public int ProbabilityUpgradeCost = 100; // 현재 확률 업그레이드 비용
+    
 
 
     [Title("Player Health")]
@@ -53,6 +60,11 @@ public class GameManager : MonoBehaviour
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
     public int PlayerShield => playerShield;
+    public int CurrentSpawnCost => currentSpawnCost;
+    public MoneyDataList MoneyDataList => moneyDataList;
+    
+    // 이벤트
+    public static Action OnMoneySystemInitialized;
 
     private void Awake()
     {
@@ -75,10 +87,20 @@ public class GameManager : MonoBehaviour
         combatManager ??= FindObjectOfType<CombatManager>();
     }
 
+    public void InitializeMoneyDataList(){
+        // MoneyData에서 초기 골드 설정
+        moneyDataList = new MoneyDataList();
+        currentGold = Mathf.Max(0, moneyDataList.moneyBaseData.INITIAL_MONEY);
+        currentSpawnCost = moneyDataList.moneyBaseData.SPAWN_INITIAL;
+        currentSpawnCostText.text = $"{currentSpawnCost} G"; // 텍스트 업데이트
+        ProbabilityUpgradeCost = moneyDataList.moneyBaseData.UPGRADE;
+        
+        // 이벤트 발생
+        OnMoneySystemInitialized?.Invoke(); // 버튼 텍스트 업데이트 
+    }
 
     public void InitialisePlayerState()
     {
-        currentGold = Mathf.Max(0, startingGold);
         currentHealth = maxHealth;
         if (currentHealth <= 0) currentHealth = maxHealth;
         playerShield = Mathf.Max(0, playerShield);
@@ -206,6 +228,36 @@ public class GameManager : MonoBehaviour
         if (amount <= 0) return;
         playerShield += amount;
         uiManager?.UpdatePlayerHealthUI();
+    }
+
+    /// <summary> 블럭 스폰 비용을 지불하고 다음 스폰 비용을 증가시킵니다. </summary>
+    public bool SpendSpawnCost()
+    {
+        if (moneyDataList?.moneyBaseData == null){Debug.LogWarning("GameManager: moneyDataList.moneyBaseData is null -> return false"); return false; }
+        
+        if (SpendGold(currentSpawnCost))
+        {
+            currentSpawnCost += moneyDataList.moneyBaseData.SPAWN_ADDED; // 다음 스폰 비용 증가
+            currentSpawnCostText.text = $"{currentSpawnCost} G";
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary> 현재 웨이브에서 적을 죽였을 때 받을 골드를 계산합니다. </summary>
+    public int GetEnemyGoldReward(int currentWave)
+    {
+        if (moneyDataList?.waveMoneyDatas == null){Debug.LogWarning("GameManager: moneyDataList.waveMoneyDatas is null -> return 1"); return 1; }
+        
+        foreach (var waveMoneyData in moneyDataList.waveMoneyDatas)
+        {
+            // WAVE_MAX가 -1이면 무한대
+            bool isInRange = currentWave >= waveMoneyData.waveMin && (waveMoneyData.waveMax == -1 || currentWave <= waveMoneyData.waveMax);
+            if (isInRange) return waveMoneyData.enemyGold;
+        }
+        
+        Debug.LogWarning("[GameManager] GetEnemyGoldReward : 속한 웨이브가 없습니다. -> return 1");
+        return 1; // 기본값
     }
 
     private void HandlePlayerDefeat()

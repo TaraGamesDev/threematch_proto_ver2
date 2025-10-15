@@ -106,7 +106,6 @@ MonoBehaviour:
   isDead: 0
   isAttacking: 0
   currentTarget: {fileID: 0}
-  goldReward: 1
 --- !u!50 &8048961211596546272
 Rigidbody2D:
   serializedVersion: 5
@@ -168,5 +167,5 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 30
+  m_Offset: {x: -14.026184, y: 10.811798}
+  m_Radius: 33.214386

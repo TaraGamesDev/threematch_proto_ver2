@@ -132,7 +132,7 @@ public class QueueManager : MonoBehaviour
         // 큐가 가득 찬 경우 구매 불가
         if (blocks.Count >= maxBlockCount){Debug.LogWarning("QueueManager: Queue is full"); return false; }
 
-        if (GameManager.Instance != null && !GameManager.Instance.SpendGold(GameManager.Instance.goldCostPerBlock)) return false;
+        if (GameManager.Instance != null && !GameManager.Instance.SpendSpawnCost()) return false;
 
         UnitData.UnitTier tier = DatabaseProbabilitySystem.GetRandomTier();
         UnitData unitData = GetRandomUnitForTier(tier);

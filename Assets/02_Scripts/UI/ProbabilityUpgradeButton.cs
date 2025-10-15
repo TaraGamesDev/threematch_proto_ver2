@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Sirenix.OdinInspector;
+using System;
 
 /// <summary>
 /// 확률 업그레이드 버튼 컴포넌트
@@ -14,12 +15,18 @@ public class ProbabilityUpgradeButton : MonoBehaviour
     [SerializeField] private TMP_Text levelText;
     [SerializeField] private TMP_Text costText;
 
-    [Space(10f)]
-    [SerializeField] private int UpgradeCost = 100;
-
     private void Awake()
     {
         if (upgradeButton != null) upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
+        
+        // 골드 시스템 초기화 이벤트 구독
+        GameManager.OnMoneySystemInitialized += UpdateUI; // 게임 매니저에서 코스트 초기화 한 후 텍스트가 업데이트 되도록 
+    }
+    
+    private void OnDestroy()
+    {
+        // 이벤트 구독 해제
+        GameManager.OnMoneySystemInitialized -= UpdateUI;
     }
 
     #region Public Methods
@@ -41,7 +48,7 @@ public class ProbabilityUpgradeButton : MonoBehaviour
         int currentLevel = DatabaseProbabilitySystem.CurrentProbabilityLevel;
         if (currentLevel >= DatabaseProbabilitySystem.MaxLevel) return false;
         
-        return GameManager.Instance != null && GameManager.Instance.Gold >= UpgradeCost;
+        return GameManager.Instance != null && GameManager.Instance.Gold >= GameManager.Instance.ProbabilityUpgradeCost;
     }
 
     #endregion
@@ -51,7 +58,7 @@ public class ProbabilityUpgradeButton : MonoBehaviour
     {
         if (!CanUpgrade()){Debug.LogWarning("[ProbabilityUpgradeButton] CanUpgrade is false"); return;}
 
-        if (GameManager.Instance.SpendGold(UpgradeCost))
+        if (GameManager.Instance.SpendGold(GameManager.Instance.ProbabilityUpgradeCost))
         {
             int newLevel = DatabaseProbabilitySystem.CurrentProbabilityLevel + 1;
             DatabaseProbabilitySystem.CurrentProbabilityLevel = newLevel;
@@ -95,7 +102,7 @@ public class ProbabilityUpgradeButton : MonoBehaviour
         if (costText != null)
         {
             if (currentLevel >= maxLevel) costText.text = "MAX";
-            else costText.text = $"{UpgradeCost} 골드";
+            else costText.text = $"{GameManager.Instance.ProbabilityUpgradeCost} 골드";
         }
     }
 

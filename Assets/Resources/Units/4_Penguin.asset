@@ -20,7 +20,7 @@ MonoBehaviour:
   health: 1463
   attackDamage: 758
   attackSpeed: 2
-  moveSpeed: 10
+  moveSpeed: 50
   attackRange: 400
   attackType: 3
   attackPattern: 3
