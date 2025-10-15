@@ -4,7 +4,7 @@
     "SRHeight": 600.0,
     "MRWidth": 900.0,
     "MRHeight": 400.0,
-    "DatabaseLeftWidth": 300.0,
+    "DatabaseLeftWidth": 214.0,
     "ConfigLeftWidth": 300.0,
     "SceneExplorerLeftWidth": 300.0,
     "ExportLeftWidth": 300.0,
@@ -141,8 +141,35 @@
     "BackUpDaily": 60,
     "DoNotIncludeSettings": false,
     "Id2MetaTableConfig": {
-        "values": [],
-        "myKeys": []
+        "values": [
+            {
+                "WidthId": 40.0,
+                "WidthName": 100.0,
+                "FilterEnabled": false,
+                "Filter": "",
+                "NameField": "",
+                "SortFieldId": "3qV6Hu6c0E2/qUk2Bx6b+g",
+                "SortFieldOrder": true,
+                "RowHeight": 26.0,
+                "ActivePreset": -1,
+                "CP": [],
+                "Id2Width": {
+                    "values": [],
+                    "myKeys": []
+                },
+                "HiddenFields": {
+                    "values": []
+                },
+                "HiddenColumns": [],
+                "OrderFields": [],
+                "PinnedColumns": [],
+                "FilterPresets": [],
+                "ACF": false
+            }
+        ],
+        "myKeys": [
+            "o7bZ+XY0KEKw/DG8pjn7MQ"
+        ]
     },
     "SyncList": [
         {
@@ -157,9 +184,9 @@
             "ActionsType": 0,
             "SettingsEntity": {
                 "mode": 0,
-                "addMissing": false,
+                "addMissing": true,
                 "updateMatching": false,
-                "removeOrphaned": false,
+                "removeOrphaned": true,
                 "id2Meta": {
                     "values": [],
                     "myKeys": []
