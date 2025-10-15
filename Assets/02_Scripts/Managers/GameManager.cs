@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
     public void InitialisePlayerState()
     {
         currentGold = Mathf.Max(0, startingGold);
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        currentHealth = maxHealth;
         if (currentHealth <= 0) currentHealth = maxHealth;
         playerShield = Mathf.Max(0, playerShield);
 
@@ -214,22 +214,4 @@ public class GameManager : MonoBehaviour
         uiManager?.ShowMessage("Game Over");
     }
 
-    public void ResetForNewRun()
-    {
-        StopAllCoroutines();
-        pendingWaveRoutine = null;
-        currentHealth = maxHealth;
-        currentGold = startingGold;
-        playerShield = 0;
-        playerLevel = 1;
-        currentExp = 0;
-        expToNextLevel = Mathf.Max(1, initialExpToNextLevel);
-
-        uiManager?.UpdateGoldTextUI();
-        uiManager?.UpdateExpTextUI();
-        uiManager?.UpdatePlayerHealthUI();
-        uiManager?.UpdateLevelText(playerLevel);
-
-        QueueInitialWave();
-    }
 }
