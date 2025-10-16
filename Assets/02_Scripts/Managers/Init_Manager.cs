@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Threading.Tasks;
+using System.Collections;
 
 public class Init_Manager : MonoBehaviour
 {
@@ -14,12 +14,13 @@ public class Init_Manager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        StartAsync();
+        StartCoroutine(InitializeGame());
     }
     
-    private async void StartAsync()
+    private IEnumerator InitializeGame()
     {
-        await Task.Delay(1000);
+        // 1초 대기 (WebGL 호환)
+        yield return new WaitForSeconds(1f);
 
         DataManager.Instance.Init();
         
