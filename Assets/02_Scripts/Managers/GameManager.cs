@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using System;
@@ -50,6 +51,10 @@ public class GameManager : MonoBehaviour
     [Title("Wave Timing")]
     [SerializeField] private float waveStartDelaySeconds = 5f;
 
+    // [Title("Game Speed")]
+    private List<float> speedMultipliers = new List<float> { 0.5f, 1f, 2f, 4f, 5f };
+    private int currentSpeedIndex = 1;
+
     private int currentGold;
     private Coroutine pendingWaveRoutine;
     private int initialExpToNextLevel;
@@ -63,6 +68,7 @@ public class GameManager : MonoBehaviour
     public int PlayerShield => playerShield;
     public int CurrentSpawnCost => currentSpawnCost;
     public MoneyDataList MoneyDataList => moneyDataList;
+    public float CurrentSpeedMultiplier => speedMultipliers[currentSpeedIndex];
     
     // 이벤트
     public static Action OnMoneySystemInitialized;
@@ -78,6 +84,10 @@ public class GameManager : MonoBehaviour
         Instance = this;
 
         initialExpToNextLevel = expToNextLevel;
+        
+        // 초기 배속 설정
+        currentSpeedIndex = 1;
+        Time.timeScale = speedMultipliers[currentSpeedIndex];
 
         // Attempt to auto-wire references when possible; scenes can still override via inspector.
         queueManager ??= FindObjectOfType<QueueManager>();
@@ -110,6 +120,7 @@ public class GameManager : MonoBehaviour
         uiManager?.UpdateExpTextUI();
         uiManager?.UpdatePlayerHealthUI();
         uiManager?.UpdateLevelText(playerLevel);
+        uiManager?.UpdateWaveText(waveManager.GetCurrentWave());
     }
 
     public void QueueInitialWave()
@@ -275,6 +286,20 @@ public class GameManager : MonoBehaviour
     {
         // 현재 씬을 다시 로드
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    /// <summary> 배속을 다음 단계로 순환시킵니다. </summary>
+    public void CycleGameSpeed()
+    {
+        if (speedMultipliers == null || speedMultipliers.Count == 0) return;
+        
+        // 다음 인덱스로 이동 (마지막이면 0으로)
+        currentSpeedIndex = (currentSpeedIndex + 1) % speedMultipliers.Count;
+        
+        // Time.timeScale 적용
+        Time.timeScale = speedMultipliers[currentSpeedIndex];
+        
+        Debug.Log($"[GameManager] Game speed changed to {speedMultipliers[currentSpeedIndex]}x");
     }
 
 }

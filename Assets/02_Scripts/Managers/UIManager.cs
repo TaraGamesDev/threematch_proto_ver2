@@ -43,6 +43,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button replayButton;
     [SerializeField] private TMP_Text FinalWaveText;
 
+    [Header("Game Speed")]
+    [SerializeField] private Button speedButton;
+    [SerializeField] private TMP_Text speedText;
+
 
     private Coroutine messageRoutine;
 
@@ -66,8 +70,12 @@ public class UIManager : MonoBehaviour
         
         if (replayButton != null) replayButton.onClick.AddListener(OnReplayButtonClicked);
         
+        // 배속 
+        if (speedButton != null) speedButton.onClick.AddListener(OnSpeedButtonClicked);
+        UpdateSpeedText(); // 배속 텍스트 초기화
+
         // 게임 오버 패널 초기화
-        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (gameOverPanel != null) gameOverPanel.SetActive(false); 
     }
 
     public void UpdateGoldTextUI()
@@ -169,6 +177,8 @@ public class UIManager : MonoBehaviour
         messageRoutine = null;
     }
 
+    #region Game Over
+    
     /// <summary> 게임 오버 패널을 표시합니다. </summary>
     public void ShowGameOverPanel()
     {
@@ -181,4 +191,27 @@ public class UIManager : MonoBehaviour
     {
         GameManager.Instance?.RestartGame();
     }
+
+    #endregion
+
+    #region Game Speed
+
+    /// <summary> 배속 버튼 클릭 이벤트 </summary>
+    private void OnSpeedButtonClicked()
+    {
+        GameManager.Instance?.CycleGameSpeed();
+        UpdateSpeedText();
+    }
+
+    /// <summary> 배속 텍스트를 업데이트합니다. </summary>
+    private void UpdateSpeedText()
+    {
+        if (speedText != null && GameManager.Instance != null)
+        {
+            float currentSpeed = GameManager.Instance.CurrentSpeedMultiplier;
+            speedText.text = $"x{currentSpeed}";
+        }
+    }
+
+    #endregion
 }

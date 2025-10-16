@@ -214,7 +214,7 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     {
         if (LevelUpPanel != null) {
             LevelUpPanel.SetActive(true);
-            Time.timeScale = 0f;
+            Time.timeScale = 0;
         }
     }
 
@@ -222,7 +222,7 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     {
         if (LevelUpPanel != null) {
             LevelUpPanel.SetActive(false);
-            Time.timeScale = 1f;
+            Time.timeScale = GameManager.Instance.CurrentSpeedMultiplier;
         }
         OnUpgradePanelClosed?.Invoke();
     }
