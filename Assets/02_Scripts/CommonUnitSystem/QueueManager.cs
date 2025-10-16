@@ -142,12 +142,12 @@ public class QueueManager : MonoBehaviour
         if (tier == UnitData.UnitTier.Tier3)
         {
             float probability = DatabaseProbabilitySystem.GetProbabilityData(DatabaseProbabilitySystem.CurrentProbabilityLevel).tier3;
-            UIManager.Instance?.ShowMessage($"🎉 축하합니다! {probability:F1}% 확률을 뚫고 티어 3 유닛을 획득했습니다!", 2.5f);
+            UIManager.Instance?.ShowMessage($"!!축하합니다!! \n{probability:F1}% 확률을 뚫고 티어 3 유닛을 획득!", 2.5f);
         }
         else if (tier == UnitData.UnitTier.Tier4)
         {
             float probability = DatabaseProbabilitySystem.GetProbabilityData(DatabaseProbabilitySystem.CurrentProbabilityLevel).tier4;
-            UIManager.Instance?.ShowMessage($"🌟 대박! {probability:F1}% 확률을 뚫고 티어 4 유닛을 획득했습니다!", 2.5f);
+            UIManager.Instance?.ShowMessage($"!!대박!! \n{probability:F1}% 확률을 뚫고 티어 4 유닛을 획득!", 2.5f);
         }
 
         InsertBlock(unitData, blocks.Count);

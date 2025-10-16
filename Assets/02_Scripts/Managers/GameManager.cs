@@ -3,6 +3,7 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 using System;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Central coordinator for runtime game state. Handles player stats, wave scheduling,
@@ -264,6 +265,16 @@ public class GameManager : MonoBehaviour
     {
         waveManager?.StopWave();
         uiManager?.ShowMessage("Game Over");
+        
+        // 게임 오버 패널 표시
+        uiManager?.ShowGameOverPanel();
+    }
+
+    /// <summary> 게임을 다시 시작합니다. (씬 리로드) </summary>
+    public void RestartGame()
+    {
+        // 현재 씬을 다시 로드
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
 }

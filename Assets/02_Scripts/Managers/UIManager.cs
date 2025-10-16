@@ -38,6 +38,11 @@ public class UIManager : MonoBehaviour
     [Header("Probability Upgrade")]
     [SerializeField] private Button probabilityInfoButton;
 
+    [Header("Game Over")]
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private Button replayButton;
+    [SerializeField] private TMP_Text FinalWaveText;
+
 
     private Coroutine messageRoutine;
 
@@ -58,6 +63,11 @@ public class UIManager : MonoBehaviour
         }
         
         if (probabilityInfoButton != null) probabilityInfoButton.onClick.AddListener(DatabaseProbabilitySystem.ShowCurrentProbabilityInfo);
+        
+        if (replayButton != null) replayButton.onClick.AddListener(OnReplayButtonClicked);
+        
+        // 게임 오버 패널 초기화
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
     }
 
     public void UpdateGoldTextUI()
@@ -157,5 +167,18 @@ public class UIManager : MonoBehaviour
 
         messagePanel.gameObject.SetActive(false);
         messageRoutine = null;
+    }
+
+    /// <summary> 게임 오버 패널을 표시합니다. </summary>
+    public void ShowGameOverPanel()
+    {
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+        if (FinalWaveText != null) FinalWaveText.text = $"최종 웨이브 : {WaveManager.Instance.GetCurrentWave()}";
+    }
+
+    /// <summary> 리플레이 버튼 클릭 이벤트 </summary>
+    private void OnReplayButtonClicked()
+    {
+        GameManager.Instance?.RestartGame();
     }
 }
