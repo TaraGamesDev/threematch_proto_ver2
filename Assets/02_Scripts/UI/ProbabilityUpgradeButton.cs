@@ -19,26 +19,17 @@ public class ProbabilityUpgradeButton : MonoBehaviour
     {
         if (upgradeButton != null) upgradeButton.onClick.AddListener(OnUpgradeButtonClicked);
         
-        // 골드 시스템 초기화 이벤트 구독
-        GameManager.OnMoneySystemInitialized += UpdateUI; // 게임 매니저에서 코스트 초기화 한 후 텍스트가 업데이트 되도록 
+        // 골드 변경 이벤트 구독
+        GameManager.OnGoldChanged += UpdateUI; // 골드가 변경될 때마다 버튼 상태 업데이트
     }
     
     private void OnDestroy()
     {
         // 이벤트 구독 해제
-        GameManager.OnMoneySystemInitialized -= UpdateUI;
+        GameManager.OnGoldChanged -= UpdateUI;
     }
 
     #region Public Methods
-
-    /// <summary>
-    /// 확률 레벨을 설정합니다.
-    /// </summary>
-    public void SetProbabilityLevel(int level)
-    {
-        DatabaseProbabilitySystem.CurrentProbabilityLevel = level;
-        UpdateUI();
-    }
 
     /// <summary>
     /// 다음 레벨로 업그레이드 가능한지 확인합니다.
@@ -62,7 +53,6 @@ public class ProbabilityUpgradeButton : MonoBehaviour
         {
             int newLevel = DatabaseProbabilitySystem.CurrentProbabilityLevel + 1;
             DatabaseProbabilitySystem.CurrentProbabilityLevel = newLevel;
-            UpdateUI();
             
             // 성공 메시지 표시
             UIManager.Instance?.ShowMessage($"확률 레벨이 {newLevel}로 상승했습니다!", 2f);

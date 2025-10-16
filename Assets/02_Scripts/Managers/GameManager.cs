@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
     public float CurrentSpeedMultiplier => speedMultipliers[currentSpeedIndex];
     
     // 이벤트
-    public static Action OnMoneySystemInitialized;
+    public static Action OnGoldChanged;
 
     private void Awake()
     {
@@ -107,7 +107,7 @@ public class GameManager : MonoBehaviour
         ProbabilityUpgradeCost = moneyDataList.moneyBaseData.UPGRADE;
         
         // 이벤트 발생
-        OnMoneySystemInitialized?.Invoke(); // 버튼 텍스트 업데이트 
+        OnGoldChanged?.Invoke(); // 버튼 텍스트 업데이트 
     }
 
     public void InitialisePlayerState()
@@ -156,6 +156,7 @@ public class GameManager : MonoBehaviour
         if (amount <= 0) return;
         currentGold += amount;
         uiManager?.UpdateGoldTextUI();
+        OnGoldChanged?.Invoke();
     }
 
     public bool SpendGold(int amount)
@@ -165,6 +166,7 @@ public class GameManager : MonoBehaviour
 
         currentGold -= amount;
         uiManager?.UpdateGoldTextUI();
+        OnGoldChanged?.Invoke();
         return true;
     }
 
