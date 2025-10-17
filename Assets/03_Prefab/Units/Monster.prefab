@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 821341521574575145}
   - component: {fileID: 8048961211596546272}
   - component: {fileID: 2577117954015430689}
+  - component: {fileID: 9009441386053606714}
   m_Layer: 6
   m_Name: Monster
   m_TagString: Untagged
@@ -91,7 +92,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitName: Unit
-  unitData: {fileID: 0}
   health: 100
   attackDamage: 10
   moveSpeed: 2
@@ -106,6 +106,7 @@ MonoBehaviour:
   isDead: 0
   isAttacking: 0
   currentTarget: {fileID: 0}
+  rb: {fileID: 0}
 --- !u!50 &8048961211596546272
 Rigidbody2D:
   serializedVersion: 5
@@ -169,3 +170,15 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: -14.026184, y: 10.811798}
   m_Radius: 33.214386
+--- !u!114 &9009441386053606714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8428618086808425289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba456d45f04f0429ca4ef162cd093d65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PooledObject

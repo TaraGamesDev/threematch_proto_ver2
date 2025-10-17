@@ -91,6 +91,21 @@ public static class DatabaseProbabilitySystem
             Debug.LogError($"DatabaseProbabilitySystem: 초기화 중 오류 발생: {e.Message}");
         }
     }
+
+    /// <summary> 확률 레벨을 초기값으로 리셋합니다. 게임 시작 시 호출됩니다. </summary>
+    public static void ResetProbabilityLevel()
+    {
+        if (probabilityCache.Count > 0)
+        {
+            currentProbabilityLevel = probabilityCache.Keys.Min();
+            Debug.Log($"DatabaseProbabilitySystem: 확률 레벨을 {currentProbabilityLevel}으로 초기화했습니다.");
+        }
+        else
+        {
+            currentProbabilityLevel = 1;
+            Debug.LogWarning("DatabaseProbabilitySystem: 캐시가 비어있어 확률 레벨을 1로 설정했습니다.");
+        }
+    }
     
     /// <summary> 확률에 따라 랜덤 티어를 반환 </summary>
     public static UnitData.UnitTier GetRandomTier()

@@ -47,6 +47,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button speedButton;
     [SerializeField] private TMP_Text speedText;
 
+    [Header("Battle Phase Control")]
+    [SerializeField] private Button startBattleButton;
 
     private Coroutine messageRoutine;
 
@@ -74,8 +76,25 @@ public class UIManager : MonoBehaviour
         if (speedButton != null) speedButton.onClick.AddListener(OnSpeedButtonClicked);
         UpdateSpeedText(); // 배속 텍스트 초기화
 
+        // 전투 시작 버튼
+        if (startBattleButton != null) startBattleButton.onClick.AddListener(OnStartBattleButtonClicked);
+
         // 게임 오버 패널 초기화
-        if (gameOverPanel != null) gameOverPanel.SetActive(false); 
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+
+        // 턴 시스템 이벤트 구독
+        GameManager.OnPhaseChanged += OnPhaseChanged; 
+    }
+
+    public void InitializeUI()
+    {
+        UpdateGoldTextUI();
+        UpdateExpTextUI();
+        UpdateLevelText(GameManager.Instance.PlayerLevel);
+        UpdatePlayerHealthUI();
+        UpdateWaveText(WaveManager.Instance.GetCurrentWave());
+        UpdateEnemyBaseHealthUI();
+        UpdateBattlePhaseUI();
     }
 
     public void UpdateGoldTextUI()
@@ -211,6 +230,39 @@ public class UIManager : MonoBehaviour
             float currentSpeed = GameManager.Instance.CurrentSpeedMultiplier;
             speedText.text = $"x{currentSpeed}";
         }
+    }
+
+    #endregion
+
+    #region Turn System
+
+    /// <summary> 턴이 변경될 때 호출됩니다. </summary>
+    private void OnPhaseChanged(GamePhase newPhase)
+    {
+        UpdateBattlePhaseUI();
+    }
+
+    /// <summary> 전투 시작 버튼 클릭 이벤트 </summary>
+    private void OnStartBattleButtonClicked()
+    {
+        if (GameManager.Instance == null) return;
+        GameManager.Instance.StartBattlePhase();
+
+    }
+
+    /// <summary> 전투 턴 UI를 업데이트합니다. </summary>
+    private void UpdateBattlePhaseUI()
+    {
+        if (GameManager.Instance == null) return;
+
+        // 전투 시작 버튼 상태 업데이트
+        if (startBattleButton != null) startBattleButton.gameObject.SetActive(GameManager.Instance.CurrentPhase == GamePhase.SummonPhase);
+    }
+
+    private void OnDestroy()
+    {
+        // 이벤트 구독 해제
+        GameManager.OnPhaseChanged -= OnPhaseChanged;
     }
 
     #endregion

@@ -53,6 +53,7 @@ public class ProbabilityUpgradeButton : MonoBehaviour
         {
             int newLevel = DatabaseProbabilitySystem.CurrentProbabilityLevel + 1;
             DatabaseProbabilitySystem.CurrentProbabilityLevel = newLevel;
+            UpdateUI();
             
             // 성공 메시지 표시
             UIManager.Instance?.ShowMessage($"확률 레벨이 {newLevel}로 상승했습니다!", 2f);
@@ -85,7 +86,7 @@ public class ProbabilityUpgradeButton : MonoBehaviour
         if (levelText != null)
         {
             if (currentLevel >= maxLevel) levelText.text = $"Lv.{currentLevel} (MAX)";
-            else levelText.text = $"Lv.{currentLevel}";
+            else levelText.text = $"현재 : Lv.{currentLevel}";
         }
 
         // 비용 텍스트

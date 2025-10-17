@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Sirenix.OdinInspector;
+using System.Linq;
+using System.Linq.Expressions;
 
 public class UnitManager : MonoBehaviour
 {
@@ -26,9 +28,20 @@ public class UnitManager : MonoBehaviour
     [Tooltip("타겟 검색 간격")]
     public float TargetSearchInterval = 0.5f;
 
+    [Title("Auto Positioning System")]
+
+    [Tooltip("사거리별 유닛 배치를 위한 Vertical Layout Group")]
+    [SerializeField] private VerticalLayoutGroup rangeLayoutGroup;
+
+    [Tooltip("각 사거리별 가로 배치를 위한 Horizontal Layout Group 프리팹")]
+    [SerializeField] private GameObject horizontalLayoutPrefab;
+    
     
     [Title("웨이브 진행상황")]
     public List<Animal> activeUnits = new List<Animal>();
+
+    // 사거리별 배치 관리 (int 키 사용 - 사거리 * 10)
+    private Dictionary<int, GameObject> rangeLayoutGroups = new Dictionary<int, GameObject>();
     
     private void Awake()
     {
@@ -73,12 +86,87 @@ public class UnitManager : MonoBehaviour
         // 신화 유닛일 때만 스케일 2배
         animal.transform.localScale = isMythic ? Vector3.one * 2f : Vector3.one;
 
-        animal.unitData = unitData;
-        animal.Init();
-        UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal);
-        animal.SetCanMove(WaveManager.Instance.IsWaveActive());
+        animal.Init(unitData);
+        UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(animal); // TODO 
 
         if (!activeUnits.Contains(animal)) activeUnits.Add(animal);
+
+        // 자동 배치 시스템 적용(전투 턴이 아닐 때만 적용)
+        if(GameManager.Instance.CurrentPhase != GamePhase.BattlePhase) AutoPositionUnitByRange(animal);
+    }
+
+    #endregion
+
+    #region Auto Positioning System
+
+    /// <summary> 유닛을 사거리에 따라 자동으로 배치합니다. </summary>
+    private void AutoPositionUnitByRange(Animal animal)
+    {
+        if (rangeLayoutGroup == null) return;
+
+        // 사거리에 10을 곱해서 int 키로 사용 (소수점 첫째 자리까지 구분)
+        int rangeKey = Mathf.RoundToInt(animal.currentAttackRange * 10f);
+        
+        // 해당 사거리의 레이아웃 그룹이 없으면 생성
+        if (!rangeLayoutGroups.ContainsKey(rangeKey)) CreateRangeLayoutGroup(rangeKey);
+
+        // 유닛을 해당 사거리 그룹에 추가
+        GameObject rangeGroup = rangeLayoutGroups[rangeKey];
+        if (rangeGroup != null) animal.transform.SetParent(rangeGroup.transform);
+
+        else Debug.LogWarning($"UnitManager: {animal.unitName} 사거리 그룹을 찾을 수 없습니다. {rangeKey}");
+    }
+
+    /// <summary> 특정 사거리의 레이아웃 그룹을 생성합니다. </summary>
+    private void CreateRangeLayoutGroup(int rangeKey)
+    {
+        if (horizontalLayoutPrefab == null || rangeLayoutGroup == null) return;
+
+        // Horizontal Layout Group 생성
+        GameObject rangeGroup = Instantiate(horizontalLayoutPrefab, rangeLayoutGroup.transform);
+        rangeGroup.name = $"Range_{rangeKey}_Group";
+        rangeLayoutGroups[rangeKey] = rangeGroup;
+        
+        // 사거리 순서대로 정렬 (짧은 사거리가 위로)
+        SortRangeGroups();
+    }
+
+    /// <summary> 사거리 그룹들을 사거리 순서대로 정렬합니다. </summary>
+    private void SortRangeGroups()
+    {
+        if (rangeLayoutGroup == null) return;
+
+        // 사거리 순서대로 정렬 (짧은 사거리가 위로)
+        var sortedRangeKeys = rangeLayoutGroups.Keys.OrderBy(r => r).ToList();
+        
+        for (int i = 0; i < sortedRangeKeys.Count; i++)
+        {
+            int rangeKey = sortedRangeKeys[i];
+            GameObject rangeGroup = rangeLayoutGroups[rangeKey];
+            if (rangeGroup != null) rangeGroup.transform.SetSiblingIndex(i);
+        }
+    }
+    
+    /// <summary> 모든 유닛을 사거리별로 재배치합니다. </summary>
+    public void ReorganizeUnitsByRange()
+    {
+        if (rangeLayoutGroup == null) return;
+
+        // 기존 그룹들에서 유닛들을 원래 진영으로 이동 (그룹은 삭제하지 않음)
+        foreach (var kvp in rangeLayoutGroups) 
+        {
+            if (kvp.Value == null) continue;
+            
+            // 그룹의 모든 자식 유닛들을 unitSpawnParent로 이동
+            Transform groupTransform = kvp.Value.transform;
+            for (int i = groupTransform.childCount - 1; i >= 0; i--) groupTransform.GetChild(i).SetParent(unitSpawnParent, false);
+            // 그룹 삭제
+            DestroyImmediate(kvp.Value);
+        }
+        rangeLayoutGroups.Clear(); 
+
+        // 모든 활성 유닛을 사거리별로 재배치
+        foreach (var unit in activeUnits) if (unit != null) AutoPositionUnitByRange(unit);
     }
 
     #endregion
@@ -89,39 +177,23 @@ public class UnitManager : MonoBehaviour
         if (activeUnits.Contains(animal)) activeUnits.Remove(animal);
     }
     
-    // 웨이브 완료 시 모든 유닛을 스폰 포지션으로 되돌리기
-    public void ResetUnitsToSpawnPosition()
+    #region On Battle End & Start
+    /// <summary> 전투 종료 후 생존한 유닛들을 정리합니다. (유닛은 지속됨) </summary>
+    public void OnBattleEnd()
     {
-        if (unitSpawnParent == null) return;
-        
-        foreach (var animal in activeUnits)
-        {
-            if (animal != null && !animal.IsDead())
-            {
-                animal.SetCanMove(false); // 움직임 정지
-                
-                // x위치는 그대로 두고 y좌표만 스폰 위치로 되돌리기
-                Vector3 currentPosition = animal.transform.position;
-                Vector3 spawnPosition = new Vector3(currentPosition.x, unitSpawnParent.position.y, currentPosition.z);
-                animal.transform.position = spawnPosition;
-                
-                animal.currentTarget = null; // 타겟 초기화
-            }
-        }
+        foreach (var animal in activeUnits) animal.Alive();
+    
+        // 사거리별 재배치
+        ReorganizeUnitsByRange();
     }
     
-    // 웨이브 시작 시 모든 유닛의 스탯 초기화 및 움직임 활성화
-    public void ResetUnitsStatsAndEnableMovement()
+    /// <summary> 전투 시작 시 모든 유닛의 스탯 초기화 및 움직임 활성화 </summary>
+    public void OnBattleStart()
     {
-        foreach (var animal in activeUnits)
-        {
-            if (animal != null && !animal.IsDead())
-            {
-                animal.ResetStats(); // 스탯 초기화
-                animal.SetCanMove(true); // 움직임 활성화
-            }
-        }
+        foreach (var animal in activeUnits) if (animal != null) animal.SetCanMove(true); // 움직임 활성화
     }
+
+    #endregion
 
     #region Pool
     /// <summary> 특정 유닛의 오브젝트 풀을 등록합니다. </summary>
@@ -135,7 +207,7 @@ public class UnitManager : MonoBehaviour
         PoolManager.Instance.RegisterPool(unitData.unitName, unitData.unitPrefab, prewarmUnitCount, null);
         unitPoolKeys[unitData.unitName] = unitData.unitName;
         
-        Debug.Log($"UnitManager: {unitData.unitName} 풀 등록 완료 (Key: {unitData.unitName})");
+        // Debug.Log($"UnitManager: {unitData.unitName} 풀 등록 완료 (Key: {unitData.unitName})");
     }
 
 

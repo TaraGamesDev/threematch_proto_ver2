@@ -8,7 +8,7 @@ public class Unit : MonoBehaviour
 {
     [Header("기본 정보")]
     public string unitName = "Unit";
-    public UnitData unitData;
+    protected UnitData unitData;
     public int health = 100;
     public int attackDamage = 10;
     public float moveSpeed = 2f;
@@ -39,40 +39,35 @@ public class Unit : MonoBehaviour
     
     
     // private or protected
-    protected Rigidbody2D rb;
+    public Rigidbody2D rb;
+    protected Collider2D bodyCollider;
     private float lastTargetSearchTime; // 마지막 타겟 검색 시간
     private SpriteRenderer spriteRenderer;
+    private Image image;
     private float damageFlashDuration = 0.1f;
     private Vector3 originalScale;
     private Color originalColor;
     
     protected virtual void Awake()
     {
-        originalScale = transform.localScale;
-        
+        // 스프라이트 기반인 경우 
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) originalColor = spriteRenderer.color;
+
+        // 이미지 기반인 경우 
+        if (image == null) image = GetComponent<Image>();
+        if (image != null) originalColor = image.color;
+
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (bodyCollider == null) bodyCollider = GetComponent<Collider2D>();
     }
 
-    protected virtual void OnEnable()
+    public virtual void Init(UnitData unitData)
     {
-        isDead = false;
-        canMove = true;
-        currentTarget = null;
-        lastAttackTime = 0f;
-
-        if (spriteRenderer != null) spriteRenderer.color = originalColor;
-        transform.localScale = originalScale;
-    }
-
-    protected virtual void Start()
-    {
-        Init();
-    }
-
-    public void Init()
-    {
+        if (unitData == null) {Debug.LogError("[Unit] Init: unitData is null"); return;}
+        
+        this.unitData = unitData;
+        
         // UnitData로 스탯 초기화
         if (unitData != null)
         {
@@ -90,6 +85,23 @@ public class Unit : MonoBehaviour
             currentAttackRange = attackRange;
             currentAttackSpeed = attackSpeed;
         }
+
+        // 상태 초기화 
+        isDead = false;
+        canMove = GameManager.Instance.CurrentPhase == GamePhase.BattlePhase; // 전투 턴일 때만 움직임 허용 
+        currentTarget = null;
+        lastAttackTime = 0f;
+        
+        // 시각적 요소 초기화 
+        if (spriteRenderer != null) spriteRenderer.color = originalColor;
+        if (image != null) image.color = originalColor;
+        originalScale = transform.localScale;
+
+        // 충돌 체크 활성화 
+        if (bodyCollider != null) bodyCollider.enabled = true;
+
+        // 리지드바디 포지션 프리즈 해제 (Z축 회전은 막기)
+        FreezeRotation_FreePosision();
     }
     
     protected virtual void Update()
@@ -121,23 +133,22 @@ public class Unit : MonoBehaviour
         return currentTarget == null || Time.time - lastTargetSearchTime >= searchInterval;
     }
     
-    
+    #region Attack
     protected virtual void Attack()
     {
         if (Time.time - lastAttackTime < 1f / currentAttackSpeed) return;
         
         lastAttackTime = Time.time;
-        MeleeAttack();
+
+        Debug.Log($"[Attack] {unitName} Attack");
+        AttackAnimation();
     }
     
     protected void AttackAnimation()
     {
-        // ResetVisual();
-        // transform.DOKill();
-
         isAttacking = true;
+
         
-        Vector3 originalScale = transform.localScale;
         Vector3 squeezedScale = new Vector3(originalScale.x * 1.3f, originalScale.y * 0.7f, originalScale.z); // 눌린 형태
         Vector3 bigScale = new Vector3(originalScale.x * 1.2f, originalScale.y * 1.2f, originalScale.z); // 큰 형태
         
@@ -154,17 +165,13 @@ public class Unit : MonoBehaviour
                     });
             });
     }
-    
     protected virtual void ApplyDamage() { 
         if (currentTarget != null && !currentTarget.IsDead()) CombatManager.Instance?.ResolveAttack(this, currentTarget, currentAttackDamage);
     }
     
-    // 근접 공격 (기본 공격)
-    protected virtual void MeleeAttack()
-    {
-        AttackAnimation();
-    }
-    
+    #endregion
+
+    #region Takc Damage
     public void TakeDamage(int damage)
     {
         if (isDead) return;
@@ -177,9 +184,6 @@ public class Unit : MonoBehaviour
     
     protected void DamageFlash()
     {
-        // ResetVisual();
-        // transform.DOKill();
-
         // SpriteRenderer가 있는 경우
         if (spriteRenderer != null)
         {
@@ -189,21 +193,18 @@ public class Unit : MonoBehaviour
                 });
         }
 
-        // UI Image가 있는 경우
-        else
+        if (image != null)
         {
-            Image image = GetComponent<Image>();
-            if (image != null)
-            {
-                Color originalImageColor = image.color;
-                image.DOColor(Color.red, damageFlashDuration * 0.5f)
-                    .OnComplete(() => {
-                        image.DOColor(originalImageColor, damageFlashDuration * 0.5f);
-                    });
-            }
+            image.DOColor(Color.red, damageFlashDuration * 0.5f)
+                .OnComplete(() => {
+                    image.DOColor(originalColor, damageFlashDuration * 0.5f);
+                });
         }
     }
+
+    #endregion
     
+    #region Die & Alive
     protected virtual void Die()
     {
         if (isDead) return;
@@ -217,9 +218,26 @@ public class Unit : MonoBehaviour
         transform.DOKill();
         ResetVisual();
 
-        PoolManager.Instance.Release(gameObject);
+        // 유닛 지속성을 위해 풀로 돌아가지 않음 -> enemy는 풀로 돌아가지만 animal은 지속성을 위해 풀로 돌아가지 않음 -> 각 스크립트에서 오버라이드 해서 관리 
+        // PoolManager.Instance.Release(gameObject);
+    }
+
+    public virtual void Alive()
+    {
+        // if (!isDead) return;
+        FreezeRotation_FreePosision(); // 리지드바디 포지션 프리즈 해제 (Z축 회전은 막기) -> 여기서 실행시키면 전투 종료 후 유닛이 진영으로 재배치가 안됨 -> 재배치 후 해제 
+        bodyCollider.enabled = true;
+
+        isDead = false;
+        currentTarget = null;
+        isAttacking = false;
+        SetCanMove(GameManager.Instance.CurrentPhase == GamePhase.BattlePhase);
+
+        ResetStats();
     }
     
+    #endregion
+
     public bool IsDead()
     {
         return isDead;
@@ -235,7 +253,8 @@ public class Unit : MonoBehaviour
     /// <summary> 유닛을 정지시킵니다. </summary>
     protected void StopMovement()
     {
-        if (rb != null)rb.linearVelocity = Vector2.zero;
+        if (rb == null) {Debug.LogError("[Unit] StopMovement: rb is null"); return;}
+        rb.linearVelocity = Vector2.zero; 
     }
 
     protected virtual void ResetVisual()
@@ -248,5 +267,24 @@ public class Unit : MonoBehaviour
         if (image != null) image.color = originalColor;
 
         transform.localScale = originalScale;
+    }
+
+    public void FreezeRotation_FreePosision()
+    {
+        // 리지드바디 포지션 프리즈 해제 (Z축 회전은 막기)
+        if (rb != null) rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+    }
+
+    // 스탯 초기화 및 영구 업그레이드 적용 (웨이브 시작 시 호출)
+    public void ResetStats()
+    {
+        // 기본 스탯으로 초기화
+        currentHealth = health;
+        currentAttackDamage = attackDamage;
+        currentMoveSpeed = moveSpeed;
+        currentAttackRange = attackRange;
+        currentAttackSpeed = attackSpeed;
+        
+        // UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(this); // TOOD 
     }
 }

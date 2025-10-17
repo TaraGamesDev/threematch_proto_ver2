@@ -13,7 +13,6 @@ public class WaveManager : MonoBehaviour
 
     
     [Title("웨이브 설정")]
-    public GameObject enemyPrefab;
     public UnitData enemyUnitData;
     public float spawnInterval = 2f;
     public int enemiesPerWave = 10;
@@ -34,11 +33,10 @@ public class WaveManager : MonoBehaviour
     [SerializeField] float healthMultiplier = 1.2f;
     [SerializeField] float damageMultiplier = 1.1f;
     [SerializeField] float speedMultiplier = 1.05f;
-    [SerializeField] float baseHealthMultiplier = 1.5f; // 웨이브당 체력 증가율
+    [SerializeField] float baseHealthMultiplier = 1.3f; // 웨이브당 체력 증가율
 
 
     [Title("오브젝트 풀")]
-    [SerializeField] private string enemyPoolKey = "enemy-unit";
     [SerializeField, Min(0)] private int prewarmEnemyCount = 50;
 
 
@@ -101,7 +99,7 @@ public class WaveManager : MonoBehaviour
         InitializeBaseHealthForWave(waveNumber);
         
         // 유닛들의 스탯 초기화 및 움직임 활성화
-        UnitManager.Instance.ResetUnitsStatsAndEnableMovement();
+        UnitManager.Instance.OnBattleStart();
         
         // 웨이브에 따른 적 수 증가
         currentWaveEnemyCount = CalculateEnemyCount(waveNumber);
@@ -145,8 +143,6 @@ public class WaveManager : MonoBehaviour
     /// <summary> 일반 적 스폰  </summary>
     private void SpawnEnemy()
     {
-        if (enemyPrefab == null || enemyUnitData == null) return;
-
         Enemy enemy = GetEnemyFromPool();
         if (enemy == null) return;
 
@@ -159,8 +155,7 @@ public class WaveManager : MonoBehaviour
         enemy.transform.rotation = Quaternion.identity;
 
         // UnitData로 기본 스탯 설정
-        enemy.unitData = enemyUnitData;
-        enemy.Init();
+        enemy.Init(enemyUnitData);
 
         // 웨이브에 따른 스탯 증가 적용
         ApplyWaveScaling(enemy);
@@ -193,8 +188,8 @@ public class WaveManager : MonoBehaviour
         // 1. 빨간색 깜빡깜박 경고 이펙트
         yield return StartCoroutine(ShowMythicWarning());
 
-        // 2. 신화 적 스폰
-        Enemy mythicEnemy = GetEnemyFromPool();
+        // 2. 신화 적 스폰 (풀 사용하지 않고 직접 생성)
+        Enemy mythicEnemy = CreateMythicEnemyDirectly(currentMythicData);
         if (mythicEnemy == null) yield break;
 
         // 신화 적 스폰 위치에도 랜덤성 추가
@@ -203,19 +198,16 @@ public class WaveManager : MonoBehaviour
         mythicEnemy.transform.position = mythicSpawnPosition;
         mythicEnemy.transform.rotation = Quaternion.identity;
 
-        // 크기 2배로 설정 (보스 느낌)
-        mythicEnemy.transform.localScale = Vector3.one * 2f;
-
         // 신화 적 데이터로 설정
-        mythicEnemy.unitData = currentMythicData;
-        mythicEnemy.GetComponent<Image>().sprite = currentMythicData.unitSprite;
+        mythicEnemy.transform.localScale = Vector3.one * 2f;  // 크기 2배로 설정 (보스 느낌)
+        mythicEnemy.Init(enemyUnitData);
         
-        // 신화 적 추가 보너스: 3배 강화
-        mythicEnemy.currentHealth = Mathf.RoundToInt(mythicEnemy.currentHealth * 1.5f);
-        mythicEnemy.currentAttackDamage = Mathf.RoundToInt(mythicEnemy.currentAttackDamage * 1.5f);
-        // mythicEnemy.currentMoveSpeed = mythicEnemy.currentMoveSpeed * 3f;
-        // mythicEnemy.currentAttackSpeed = mythicEnemy.currentAttackSpeed * 1.5f;
-        mythicEnemy.currentAttackRange = mythicEnemy.currentAttackRange * 2f;
+        // 웨이브에 따른 스탯 증가 적용 (일반 몹과 동일)
+        ApplyWaveScaling(mythicEnemy);
+        
+        // 보스 신화 적 추가 보너스: 공격력 2배, 체력 5배
+        mythicEnemy.currentHealth = Mathf.RoundToInt(mythicEnemy.currentHealth * 10f);
+        mythicEnemy.currentAttackDamage = Mathf.RoundToInt(mythicEnemy.currentAttackDamage * 2f);
 
         mythicEnemy.SetCanMove(true);
         RegisterEnemy(mythicEnemy);
@@ -323,16 +315,28 @@ public class WaveManager : MonoBehaviour
     private void CheckWaveCompletion()
     {
         // 기지가 파괴되었고, 모든 몬스터가 스폰되었으며, 모든 몬스터가 죽었을 때 웨이브 클리어
-        if (isWaveActive && isBaseDestroyed && enemiesSpawned >= currentWaveEnemyCount && activeEnemies.Count == 0)
+        // if (isWaveActive && isBaseDestroyed && enemiesSpawned >= currentWaveEnemyCount && activeEnemies.Count == 0)
+        
+        // 모든 몬스터가 스폰되었으며, 모든 몬스터가 죽었을 때 웨이브 클리어 (기지 파괴 조건 제거)
+        if (isWaveActive && enemiesSpawned >= currentWaveEnemyCount && activeEnemies.Count == 0)
         {
-            Debug.Log($"[WaveManager] CheckWaveCompletion - CompleteWave (Base destroyed, all enemies killed)");
+            Debug.Log($"[WaveManager] CheckWaveCompletion - CompleteWave (All enemies killed)");
             CompleteWave();
         }
     }
     
     private void CompleteWave()
     {
+        // 소환 턴으로 전환
+        GameManager.Instance.CompleteWave();
+        
+        currentWave++;
         isWaveActive = false;
+
+        // 유닛들 초기화 - 전투 종료 후 원래 진영으로 돌아가도록  (유닛은 지속됨)
+        UnitManager.Instance.OnBattleEnd();
+
+        // 신화 관련 
         
         // 신화 해금 확인 및 메시지 표시
         bool hasMythicUnlock = CheckMythicUnlock();
@@ -342,24 +346,14 @@ public class WaveManager : MonoBehaviour
         GameManager.Instance.AddGold(waveReward);
         
         // 신화 해금이 있으면 지연 후 웨이브 클리어 메시지 표시, 없으면 즉시 표시
-        if (hasMythicUnlock)
-        {
-            StartCoroutine(ShowWaveCompleteMessageDelayed(waveReward));
-        }
-        else
-        {
-            ShowWaveCompleteMessage(waveReward);
-        }
+        if (hasMythicUnlock) StartCoroutine(ShowWaveCompleteMessageDelayed(waveReward));
+        else ShowWaveCompleteMessage(waveReward);
         
         // UI 업데이트
         UIManager.Instance.UpdateGoldTextUI();
+        UIManager.Instance.UpdateWaveText(currentWave);
                 
-        // foreach (var animal in UnitManager.Instance.activeUnits)
-        //     if (animal != null && !animal.IsDead()) animal.SetCanMove(false); // 움직임 정지
-
-        UnitManager.Instance.ResetUnitsToSpawnPosition();
-            
-        GameManager.Instance.CompleteWave();
+        
     }
     
     // 웨이브 클리어 보상 계산
@@ -412,8 +406,8 @@ public class WaveManager : MonoBehaviour
     /// <summary> 웨이브 클리어 메시지를 즉시 표시합니다. </summary>
     private void ShowWaveCompleteMessage(int waveReward = 0)
     {
-        if(waveReward > 0) UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어! \n 보상 : {waveReward} 골드");
-        else UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어!");
+        if(waveReward > 0) UIManager.Instance.ShowMessage($"Wave {currentWave-1} 클리어! \n 보상 : {waveReward} 골드");
+        else UIManager.Instance.ShowMessage($"Wave {currentWave-1} 클리어!");
     }
 
     /// <summary> 신화 해금 메시지 후 지연하여 웨이브 클리어 메시지를 표시합니다. </summary>
@@ -423,8 +417,8 @@ public class WaveManager : MonoBehaviour
         yield return new WaitForSeconds(3.5f);
         
         // 웨이브 클리어 메시지 표시
-        if(waveReward > 0) UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어! \n 보상 : {waveReward} 골드");
-        else UIManager.Instance.ShowMessage($"Wave {currentWave} 클리어!");
+        if(waveReward > 0) UIManager.Instance.ShowMessage($"Wave {currentWave-1} 클리어! \n 보상 : {waveReward} 골드");
+        else UIManager.Instance.ShowMessage($"Wave {currentWave-1} 클리어!");
     }
 
     /// <summary> QueueManager의 mythicRecipeConfig를 순회하여 mythicEnemyWaves를 자동으로 채웁니다. </summary>
@@ -515,20 +509,42 @@ public class WaveManager : MonoBehaviour
     #region Pool
     private void RegisterEnemyPool()
     {
-        if (PoolManager.Instance == null) return;
-        if (enemyPrefab == null){ Debug.LogWarning("WaveManager: enemyPrefab이 설정되지 않았습니다."); return; }
-        PoolManager.Instance.RegisterPool(enemyPoolKey, enemyPrefab, prewarmEnemyCount, null);
+        if (PoolManager.Instance == null || enemyUnitData == null || enemyUnitData.unitPrefab == null) return;
+        
+        string poolKey = enemyUnitData.unitName;
+        PoolManager.Instance.RegisterPool(poolKey, enemyUnitData.unitPrefab, prewarmEnemyCount, null);
     }
 
     private Enemy GetEnemyFromPool()
     {
         Enemy enemy = null;
 
-        if (PoolManager.Instance != null) enemy = PoolManager.Instance.Get<Enemy>(enemyPoolKey, monsterSpawnZone);
-
-        if (enemy == null && enemyPrefab != null) Debug.LogWarning("Enemy Pool에서 오브젝트를 꺼내오는데 실패했습니다.");
+        if (PoolManager.Instance != null) enemy = PoolManager.Instance.Get<Enemy>(enemyUnitData.unitName, monsterSpawnZone);
+        if (enemy == null) Debug.LogWarning("Enemy Pool에서 오브젝트를 꺼내오는데 실패했습니다.");
         
         return enemy;
+    }
+    
+    /// <summary> 신화 유닛 데이터의 프리팹을 사용하여 신화 적을 직접 생성합니다. (풀 사용 안함) </summary>
+    private Enemy CreateMythicEnemyDirectly(UnitData mythicData)
+    {
+        if (mythicData == null || mythicData.unitPrefab == null) { Debug.LogWarning("WaveManager: 신화 유닛 데이터 또는 UnitData의 프리팹이 null입니다."); return null; }
+        
+        // 신화 유닛 프리팹을 직접 인스턴스화
+        GameObject mythicEnemyObj = Instantiate(mythicData.unitPrefab, monsterSpawnZone);
+        Enemy mythicEnemy = mythicEnemyObj.GetComponent<Enemy>();
+        
+        if (mythicEnemy == null) 
+        {
+            Debug.LogWarning($"WaveManager: {mythicData.unitName} 프리팹에 Enemy 컴포넌트가 없습니다. Enemy 컴포넌트를 추가합니다.");
+            mythicEnemy = mythicEnemyObj.AddComponent<Enemy>();
+        }
+
+        // 신화 적은 동물이 아니므로 Animal 컴포넌트를 비활성화
+        Animal animal = mythicEnemy.GetComponent<Animal>();
+        if (animal != null) animal.enabled = false;
+    
+        return mythicEnemy;
     }
 
     #endregion

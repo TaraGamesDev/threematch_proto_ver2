@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
+using DG.Tweening;
 
 public class Animal : Unit
 {   
@@ -64,16 +65,16 @@ public class Animal : Unit
         }
         
         // 적 기지 타겟이 있고 사거리 안에 있으면 공격
-        if (WaveManager.Instance.EnemyBaseTransform != null)
-        {
-            float distanceToBase = Vector3.Distance(transform.position, WaveManager.Instance.EnemyBaseTransform.position);
-            if (distanceToBase <= currentAttackRange)
-            {
-                StopMovement(); // 공격 중에는 정지
-                AttackEnemyBase();
-                return; // 공격 중에는 이동하지 않음
-            }
-        }
+        // if (WaveManager.Instance.EnemyBaseTransform != null)
+        // {
+        //     float distanceToBase = Vector3.Distance(transform.position, WaveManager.Instance.EnemyBaseTransform.position);
+        //     if (distanceToBase <= currentAttackRange)
+        //     {
+        //         StopMovement(); // 공격 중에는 정지
+        //         AttackEnemyBase();
+        //         return; // 공격 중에는 이동하지 않음
+        //     }
+        // }
         
         // 타겟을 향해 이동
         MoveTowardsTarget();
@@ -116,20 +117,17 @@ public class Animal : Unit
     protected override void Die()
     {
         if (isDead) return;
-        UnitManager.Instance.RemoveUnit(this); // 유닛 매니저의 activeUnits에서 유닛 제거
+        // UnitManager.Instance.RemoveUnit(this); // 유닛 매니저의 activeUnits에서 유닛 제거 
+        SetCanMove(false);
+
+        // 이동 못하도록 
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        bodyCollider.enabled = false; // 죽은것들과는 충돌하지 않도록 
+        
+        // 플레이어 유닛 전멸 체크
+        GameManager.Instance?.CheckPlayerUnitsDefeat();
+        
         base.Die();
     }
-    
-    // 스탯 초기화 및 영구 업그레이드 적용 (웨이브 시작 시 호출)
-    public void ResetStats()
-    {
-        // 기본 스탯으로 초기화
-        currentHealth = health;
-        currentAttackDamage = attackDamage;
-        currentMoveSpeed = moveSpeed;
-        currentAttackRange = attackRange;
-        currentAttackSpeed = attackSpeed;
-        
-        UpgradeSystem.Instance?.ApplyPermanentUpgradesToUnit(this);
-    }
+
 }

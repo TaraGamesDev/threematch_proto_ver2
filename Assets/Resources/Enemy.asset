@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 557315aef3de343f682227848017e550, type: 3}
   m_Name: Enemy
   m_EditorClassIdentifier: 
-  unitName: "\uC801"
+  unitName: Enemy_0
   description: 
   unitSprite: {fileID: 3139590038334684883, guid: 27cadda7732954891a349a4c21ce8bdd, type: 3}
   tier: 1
-  unitPrefab: {fileID: 0}
+  unitPrefab: {fileID: 8428618086808425289, guid: 4e7a056a37e594af3930683e2d64501b, type: 3}
   health: 114
   attackDamage: 32
   attackSpeed: 1.5
   moveSpeed: 50
-  attackRange: 80
+  attackRange: 120
   attackType: 0
   attackPattern: 0
   projectileType: 0

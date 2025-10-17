@@ -6,6 +6,12 @@ using System;
 using TMPro;
 using UnityEngine.SceneManagement;
 
+public enum GamePhase
+{
+    SummonPhase,    // 소환 턴 - 유닛 배치 및 블럭 뽑기
+    BattlePhase     // 전투 턴 - 적과의 전투 진행
+}
+
 /// <summary>
 /// Central coordinator for runtime game state. Handles player stats, wave scheduling,
 /// and provides shared references for other systems.
@@ -48,7 +54,8 @@ public class GameManager : MonoBehaviour
     public Transform playerTransform;
     
 
-    [Title("Wave Timing")]
+    [Title("Turn System")]
+    [SerializeField, ReadOnly] private GamePhase currentPhase = GamePhase.SummonPhase;
     [SerializeField] private float waveStartDelaySeconds = 5f;
 
     // [Title("Game Speed")]
@@ -69,9 +76,11 @@ public class GameManager : MonoBehaviour
     public int CurrentSpawnCost => currentSpawnCost;
     public MoneyDataList MoneyDataList => moneyDataList;
     public float CurrentSpeedMultiplier => speedMultipliers[currentSpeedIndex];
+    public GamePhase CurrentPhase => currentPhase;
     
     // 이벤트
     public static Action OnGoldChanged;
+    public static Action<GamePhase> OnPhaseChanged; // UI 업데이트를 위한 
 
     private void Awake()
     {
@@ -88,6 +97,9 @@ public class GameManager : MonoBehaviour
         // 초기 배속 설정
         currentSpeedIndex = 1;
         Time.timeScale = speedMultipliers[currentSpeedIndex];
+
+        // 초기 턴 설정 (소환 턴으로 시작)
+        currentPhase = GamePhase.SummonPhase;
 
         // Attempt to auto-wire references when possible; scenes can still override via inspector.
         queueManager ??= FindObjectOfType<QueueManager>();
@@ -115,18 +127,49 @@ public class GameManager : MonoBehaviour
         currentHealth = maxHealth;
         if (currentHealth <= 0) currentHealth = maxHealth;
         playerShield = Mathf.Max(0, playerShield);
-
-        uiManager?.UpdateGoldTextUI();
-        uiManager?.UpdateExpTextUI();
-        uiManager?.UpdatePlayerHealthUI();
-        uiManager?.UpdateLevelText(playerLevel);
-        uiManager?.UpdateWaveText(waveManager.GetCurrentWave());
     }
 
     public void QueueInitialWave()
     {
         if (waveManager == null) return;
         QueueWaveStart(Mathf.Max(1, waveManager.GetCurrentWave()));
+    }
+
+    #region Switch Phase
+
+    /// <summary> 소환 턴으로 전환합니다. </summary>
+    public void SwitchToSummonPhase()
+    {
+        if (currentPhase == GamePhase.SummonPhase) return;
+        
+        currentPhase = GamePhase.SummonPhase;
+        OnPhaseChanged?.Invoke(currentPhase);
+        
+        Debug.Log("[GameManager] Switched to Summon Phase");
+    }
+
+    /// <summary> 전투 턴으로 전환합니다. </summary>
+    public void SwitchToBattlePhase()
+    {
+        if (currentPhase == GamePhase.BattlePhase) return;
+        
+        currentPhase = GamePhase.BattlePhase;
+        OnPhaseChanged?.Invoke(currentPhase);
+        
+        Debug.Log("[GameManager] Switched to Battle Phase");
+    }
+
+    #endregion
+
+    /// <summary> 웨이브 시작 버튼을 눌렀을 때 호출됩니다. </summary>
+    public void StartBattlePhase()
+    {
+        if (currentPhase != GamePhase.SummonPhase) return;
+        
+        SwitchToBattlePhase();
+        
+        // 다음 웨이브 시작
+        if (waveManager != null) waveManager.StartWave(waveManager.GetCurrentWave());
     }
 
     public void QueueWaveStart(int waveNumber)
@@ -148,7 +191,12 @@ public class GameManager : MonoBehaviour
     public void CompleteWave()
     {
         if (waveManager == null) return;
-        QueueWaveStart(waveManager.GetCurrentWave() + 1);
+        
+        
+        // 웨이브 완료 후 자동으로 다음 웨이브를 시작하지 않음
+        // 플레이어가 "웨이브 시작" 버튼을 눌러야 다음 웨이브 시작
+        Debug.Log($"[GameManager] Wave {waveManager.GetCurrentWave()} completed. Ready for next wave.");
+        SwitchToSummonPhase();
     }
 
     public void AddGold(int amount)
@@ -281,6 +329,25 @@ public class GameManager : MonoBehaviour
         
         // 게임 오버 패널 표시
         uiManager?.ShowGameOverPanel();
+    }
+
+    /// <summary> 플레이어 유닛이 모두 죽었는지 확인합니다. </summary>
+    public void CheckPlayerUnitsDefeat()
+    {
+        if (unitManager == null) return;
+        
+        // 모든 유닛이 죽었는지 확인
+        bool allUnitsDead = true;
+        foreach (var unit in unitManager.activeUnits)
+        {
+            if (unit != null && !unit.IsDead())
+            {
+                allUnitsDead = false;
+                break;
+            }
+        }
+        
+        if (allUnitsDead && unitManager.activeUnits.Count > 0) HandlePlayerDefeat();
     }
 
     /// <summary> 게임을 다시 시작합니다. (씬 리로드) </summary>

@@ -8,15 +8,12 @@ public class Enemy : Unit
     [Header("전투")]
     private Transform targetPlayer; // 플레이어 타겟
     
-    protected override void OnEnable()
+    protected void OnEnable()
     {
-        base.OnEnable();
         targetPlayer = null;
         currentTarget = null;
         if(GameManager.Instance.playerTransform != null) targetPlayer = GameManager.Instance.playerTransform;
         else Debug.LogError("GameManager.Instance.playerTransform is null");
-
-        if (WaveManager.Instance != null) WaveManager.Instance.RegisterEnemy(this);
     }
     
     #region Update Target
@@ -82,7 +79,7 @@ public class Enemy : Unit
             {
                 StopMovement(); // 공격 중에는 정지
                 AttackPlayer();
-                return; // 공격 중에는 이동하지 않음
+                return;
             }
         }
         
@@ -135,6 +132,9 @@ public class Enemy : Unit
     protected override void Die()
     {
         base.Die();
+
+        // 적은 죽으면 풀로 돌아가야함
+        PoolManager.Instance.Release(gameObject);
 
         // 미리 설정된 골드 보상 사용
         GameManager.Instance.AddGold(WaveManager.Instance.CurrentWaveGoldReward);

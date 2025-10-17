@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using BansheeGz.BGDatabase;
+using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// 레벨업 시 업그레이드 능력을 관리하는 시스템
@@ -15,7 +17,16 @@ public class LevelUpUpgradeSystem : MonoBehaviour
 
     [Title("Upgrade Settings")]
     [SerializeField] private int upgradeChoicesCount = 3;
-    [SerializeField] private int rerollCost = 10;
+
+
+    [Title("Reroll Settings")]
+    [SerializeField] private Button rerollButton;
+    [SerializeField] private TMP_Text rerollCostText;
+    [SerializeField] private int baseRerollCost = 10;
+    [SerializeField] private int rerollCostIncrease = 2;
+    
+    // 현재 리롤 코스트 (동적으로 변경됨)
+    [ShowInInspector, ReadOnly] private int currentRerollCost;
 
     [Title("UI References")]
     [SerializeField] private GameObject upgradeCard;
@@ -51,6 +62,8 @@ public class LevelUpUpgradeSystem : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        if (rerollButton != null) rerollButton.onClick.AddListener(RerollUpgrades);
     }
 
     #endregion
@@ -88,6 +101,7 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     [Sirenix.OdinInspector.Button("OnLevelUp")]
     public void OnLevelUp()
     {
+        ResetRerollCost(); // 리롤 코스트 초기화
         GenerateUpgradeChoices();
         ShowUpgradeSelectionPanel();
     }
@@ -183,13 +197,17 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     /// <summary> 업그레이드 선택을 리롤합니다. </summary>
     public void RerollUpgrades()
     {
-        if (GameManager.Instance.Gold < rerollCost)
+        if (GameManager.Instance.Gold < currentRerollCost)
         {
-            UIManager.Instance?.ShowMessage("골드가 부족합니다!", 2f);
+            rerollButton.interactable = false;
             return;
         }
 
-        if (GameManager.Instance.SpendGold(rerollCost)) GenerateUpgradeChoices();
+        if (GameManager.Instance.SpendGold(currentRerollCost))
+        {
+            IncreaseRerollCost(); // 리롤 코스트 증가
+            GenerateUpgradeChoices();
+        }
     }
 
     #region Utility Methods
@@ -198,6 +216,26 @@ public class LevelUpUpgradeSystem : MonoBehaviour
     public int GetAbilityRank(int abilityId)
     {
         return playerUpgrades.ContainsKey(abilityId) ? playerUpgrades[abilityId].currentRank : 0;
+    }
+
+    /// <summary> 리롤 코스트를 기본값으로 초기화합니다. </summary>
+    private void ResetRerollCost()
+    {
+        currentRerollCost = baseRerollCost;
+        UpdateRerollCostText();
+        if (rerollButton != null && currentRerollCost <= GameManager.Instance.Gold) rerollButton.interactable = true;
+    }
+
+    /// <summary> 리롤 코스트를 증가시킵니다. </summary>
+    private void IncreaseRerollCost()
+    {
+        currentRerollCost += rerollCostIncrease;
+        UpdateRerollCostText();
+    }
+
+    private void UpdateRerollCostText()
+    {
+        if (rerollCostText != null) rerollCostText.text = $"현재 골드 : {GameManager.Instance.Gold} / 리롤 비용 : {currentRerollCost}";
     }
 
     /// <summary> 모든 업그레이드 카드를 제거합니다. </summary>
