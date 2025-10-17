@@ -18,5 +18,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5b5557415030c4dff968d136b497b2c1, type: 2}
   ResultUnit: {fileID: 11400000, guid: 06ac0de3b241b46848ac8fe7934a0505, type: 2}
   OutputCount: 1
-  unlockWave: 20
+  unlockWave: 13
   isUnlocked: 0

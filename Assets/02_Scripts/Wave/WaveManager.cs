@@ -329,8 +329,8 @@ public class WaveManager : MonoBehaviour
     {
         // 소환 턴으로 전환
         GameManager.Instance.CompleteWave();
-        
         currentWave++;
+        
         isWaveActive = false;
 
         // 유닛들 초기화 - 전투 종료 후 원래 진영으로 돌아가도록  (유닛은 지속됨)
@@ -384,9 +384,9 @@ public class WaveManager : MonoBehaviour
         {
             foreach (MythicRecipe recipe in config.ActiveRecipes)
             {
-                if (recipe.unlockWave == currentWave && !recipe.isUnlocked)
+                if (recipe.unlockWave == currentWave-1 && !recipe.isUnlocked)
                 {
-                    Debug.Log($"Mythic unit '{recipe.Id}' unlocked at wave {currentWave}!");
+                    Debug.Log($"Mythic unit '{recipe.Id}' unlocked at wave {currentWave-1}!");
                     
                     recipe.isUnlocked = true;
                     hasUnlocked = true;

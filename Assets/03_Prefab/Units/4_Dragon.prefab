@@ -91,7 +91,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unitName: Unit
-  unitData: {fileID: 11400000, guid: 0e4d07f47452549589f2c10d0e90c8ed, type: 2}
   health: 100
   attackDamage: 10
   moveSpeed: 2
@@ -103,13 +102,10 @@ MonoBehaviour:
   currentAttackRange: 0
   currentAttackSpeed: 0
   canMove: 1
-  lastAttackTime: 0
+  isDead: 0
   isAttacking: 0
   currentTarget: {fileID: 0}
-  spriteRenderer: {fileID: 0}
   rb: {fileID: 0}
-  attackAnimationDuration: 0.3
-  damageFlashDuration: 0.1
 --- !u!58 &-2891346841878592040
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -145,7 +141,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 30
+  m_Radius: 20
 --- !u!50 &3206019779593604784
 Rigidbody2D:
   serializedVersion: 5

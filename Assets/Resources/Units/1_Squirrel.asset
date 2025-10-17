@@ -21,7 +21,7 @@ MonoBehaviour:
   attackDamage: 36
   attackSpeed: 1.7
   moveSpeed: 60
-  attackRange: 120
+  attackRange: 140
   attackType: 0
   attackPattern: 0
   projectileType: 0

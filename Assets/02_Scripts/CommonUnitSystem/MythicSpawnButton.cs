@@ -122,10 +122,10 @@ public class MythicSpawnButton : MonoBehaviour
             lockIcon.SetActive(locked);
         }
 
-        if (button != null)
-        {
-            button.interactable = !locked;
-        }
+        // if (button != null)
+        // {
+        //     button.interactable = !locked;
+        // }
 
         // 잠금 상태일 때는 회색으로 설정
         if (locked && buttonImage != null)
@@ -243,9 +243,9 @@ public class MythicSpawnButton : MonoBehaviour
     {
         if (assignedRecipe == null) return;
 
-        string tooltipText = $"<color=red>🔒 잠금됨</color>\n";
-        tooltipText += $"<color=orange>{assignedRecipe.ResultUnit?.unitName}</color>\n";
-        tooltipText += $"해금 조건: <color=yellow>웨이브 {assignedRecipe.unlockWave} 클리어</color>";
+        string tooltipText = $"<color=red> 잠금됨</color>\n";
+        tooltipText += $"{assignedRecipe.ResultUnit?.unitName}\n";
+        tooltipText += $"해금 조건: 웨이브 <color=yellow> {assignedRecipe.unlockWave} </color> 클리어";
 
         if (UIManager.Instance != null) UIManager.Instance.ShowMessage(tooltipText, tooltipDuration);
     }
